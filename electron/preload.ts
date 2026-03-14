@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startBot: (config: BotConfig) => ipcRenderer.send('start-bot', config),
   stopBot: () => ipcRenderer.send('stop-bot'),
   getStatus: () => ipcRenderer.invoke('get-status'),
+  getNetworkIP: () => ipcRenderer.invoke('get-network-ip'),
   onBotLog: (callback: (log: string) => void) => {
     ipcRenderer.on('bot-log', (_event, log) => callback(log));
   },
@@ -12,6 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onBotError: (callback: (error: string) => void) => {
     ipcRenderer.on('bot-error', (_event, error) => callback(error));
+  },
+  onConfigLoaded: (callback: (config: BotConfig) => void) => {
+    ipcRenderer.on('config-loaded', (_event, config) => callback(config));
   }
 });
 
