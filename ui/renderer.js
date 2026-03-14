@@ -75,6 +75,40 @@ function populateConfigForm(config) {
     document.getElementById('bot-prefix').value = config.bot.defaultPrefix;
     document.getElementById('bot-to-role').value = config.bot.defaultToRole;
 }
+function validateFormConfig() {
+    const discordToken = document.getElementById('discord-token').value;
+    const challongeUsername = document.getElementById('challonge-username').value;
+    const challongeToken = document.getElementById('challonge-token').value;
+    const botPrefix = document.getElementById('bot-prefix').value;
+    const botToRole = document.getElementById('bot-to-role').value;
+    // Validation rules
+    const errors = [];
+    if (!discordToken) {
+        errors.push({ field: 'discord-token', message: 'Discord token is required' });
+    }
+    else if (discordToken.length < 50) {
+        errors.push({ field: 'discord-token', message: 'Discord token appears invalid (too short)' });
+    }
+    if (!challongeUsername) {
+        errors.push({ field: 'challonge-username', message: 'Username is required' });
+    }
+    if (!challongeToken) {
+        errors.push({ field: 'challonge-token', message: 'API key is required' });
+    }
+    else if (challongeToken.length < 20) {
+        errors.push({ field: 'challonge-token', message: 'API key appears invalid (too short)' });
+    }
+    if (!botPrefix) {
+        errors.push({ field: 'bot-prefix', message: 'Prefix is required' });
+    }
+    else if (botPrefix.length > 10) {
+        errors.push({ field: 'bot-prefix', message: 'Prefix should be 10 characters or less' });
+    }
+    if (!botToRole) {
+        errors.push({ field: 'bot-to-role', message: 'TO role name is required' });
+    }
+    return errors;
+}
 function handleConfigSubmit(e) {
     e.preventDefault();
     const config = {
@@ -92,9 +126,10 @@ function handleConfigSubmit(e) {
         web: { port: 3000, autoIncrement: true },
         logging: { level: 'info' }
     };
-    // Basic validation
-    if (!config.discord.token || !config.challonge.username || !config.challonge.token) {
-        alert('Please fill in all required fields');
+    // Validation
+    const errors = validateFormConfig();
+    if (errors.length > 0) {
+        alert('Configuration errors:\n' + errors.map(e => `• ${e.message}`).join('\n'));
         return;
     }
     window.electronAPI.startBot(config);

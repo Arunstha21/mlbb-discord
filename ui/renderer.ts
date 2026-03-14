@@ -132,6 +132,50 @@ function populateConfigForm(config: BotConfig): void {
   (document.getElementById('bot-to-role') as HTMLInputElement).value = config.bot.defaultToRole;
 }
 
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+function validateFormConfig(): ValidationError[] {
+  const discordToken = (document.getElementById('discord-token') as HTMLInputElement).value;
+  const challongeUsername = (document.getElementById('challonge-username') as HTMLInputElement).value;
+  const challongeToken = (document.getElementById('challonge-token') as HTMLInputElement).value;
+  const botPrefix = (document.getElementById('bot-prefix') as HTMLInputElement).value;
+  const botToRole = (document.getElementById('bot-to-role') as HTMLInputElement).value;
+
+  // Validation rules
+  const errors: ValidationError[] = [];
+
+  if (!discordToken) {
+    errors.push({ field: 'discord-token', message: 'Discord token is required' });
+  } else if (discordToken.length < 50) {
+    errors.push({ field: 'discord-token', message: 'Discord token appears invalid (too short)' });
+  }
+
+  if (!challongeUsername) {
+    errors.push({ field: 'challonge-username', message: 'Username is required' });
+  }
+
+  if (!challongeToken) {
+    errors.push({ field: 'challonge-token', message: 'API key is required' });
+  } else if (challongeToken.length < 20) {
+    errors.push({ field: 'challonge-token', message: 'API key appears invalid (too short)' });
+  }
+
+  if (!botPrefix) {
+    errors.push({ field: 'bot-prefix', message: 'Prefix is required' });
+  } else if (botPrefix.length > 10) {
+    errors.push({ field: 'bot-prefix', message: 'Prefix should be 10 characters or less' });
+  }
+
+  if (!botToRole) {
+    errors.push({ field: 'bot-to-role', message: 'TO role name is required' });
+  }
+
+  return errors;
+}
+
 function handleConfigSubmit(e: Event): void {
   e.preventDefault();
   const config: BotConfig = {
@@ -150,9 +194,10 @@ function handleConfigSubmit(e: Event): void {
     logging: { level: 'info' }
   };
 
-  // Basic validation
-  if (!config.discord.token || !config.challonge.username || !config.challonge.token) {
-    alert('Please fill in all required fields');
+  // Validation
+  const errors = validateFormConfig();
+  if (errors.length > 0) {
+    alert('Configuration errors:\n' + errors.map(e => `• ${e.message}`).join('\n'));
     return;
   }
 
