@@ -1,0 +1,16 @@
+appId: com.mlbb.tournament-bot
+productName: MLBB Tournament Bot
+directories:
+  output: dist/installers
+  buildResources: assets
+files:
+  - dist/electron/**/*
+  - dist/src/**/*
+  - ui/**/*
+  - data/**/*
+win:
+  target: nsis
+  icon: assets/icon.ico
+mac:
+  target: dmg
+  icon: assets/icon.icns
