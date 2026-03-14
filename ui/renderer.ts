@@ -6,6 +6,7 @@ interface ElectronAPI {
   stopBot: () => void;
   getStatus: () => Promise<BotStatus>;
   getNetworkIP: () => Promise<{ local: string; network: string }>;
+  openWebInterface: () => void;
   onBotLog: (callback: (log: string) => void) => void;
   onBotStatus: (callback: (status: BotStatus) => void) => void;
   onBotError: (callback: (error: string) => void) => void;
@@ -193,8 +194,7 @@ function appendLog(log: string, isError = false): void {
 }
 
 function openWebInterface(): void {
-  const port = 3000;
-  window.open(`http://localhost:${port}`, '_blank');
+  window.electronAPI.openWebInterface();
 }
 
 function exportLogs(): void {

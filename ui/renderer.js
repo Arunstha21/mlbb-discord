@@ -134,8 +134,7 @@ function appendLog(log, isError = false) {
     });
 }
 function openWebInterface() {
-    const port = 3000;
-    window.open(`http://localhost:${port}`, '_blank');
+    window.electronAPI.openWebInterface();
 }
 function exportLogs() {
     const logs = logContainer.innerText;

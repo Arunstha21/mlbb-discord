@@ -5,6 +5,7 @@ import * as os from 'os';
 import { loadConfig, saveConfig, configToEnv, BotConfig, BotStatus } from './config';
 
 let mainWindow: BrowserWindow | null = null;
+let webWindow: BrowserWindow | null = null;
 let botProcess: ChildProcess | null = null;
 let currentConfig: BotConfig | null = null;
 
@@ -108,6 +109,29 @@ function stopBot(): void {
   }
 }
 
+function createWebWindow(port: number): void {
+  if (webWindow) {
+    webWindow.focus();
+    return;
+  }
+
+  webWindow = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    title: 'MLBB Bot - Web Interface',
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  webWindow.loadURL(`http://localhost:${port}`);
+
+  webWindow.on('closed', () => {
+    webWindow = null;
+  });
+}
+
 // IPC Handlers
 ipcMain.handle('get-status', (): BotStatus => {
   return {
@@ -130,6 +154,12 @@ ipcMain.handle('get-network-ip', (): { local: string; network: string } => {
     local: 'localhost',
     network: getNetworkIP()
   };
+});
+
+ipcMain.on('open-web-interface', () => {
+  if (currentConfig) {
+    createWebWindow(currentConfig.web.port);
+  }
 });
 
 // App lifecycle
