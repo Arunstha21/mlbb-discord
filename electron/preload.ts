@@ -17,15 +17,27 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onConfigLoaded: (callback: (config: BotConfig) => void) => {
     ipcRenderer.on('config-loaded', (_event, config) => callback(config));
+  },
+  onPortDetected: (callback: (port: number) => void) => {
+    ipcRenderer.on('port-detected', (_event, { port }) => callback(port));
   }
 });
 
 interface BotConfig {
+  version: string;
   discord: { token: string };
   challonge: { username: string; token: string };
-  bot: { defaultPrefix: string; defaultToRole: string };
-  database: { type: string; path: string };
-  web: { port: number };
+  bot: {
+    defaultPrefix: string;
+    defaultToRole: string;
+    participantRole?: string;
+  };
+  database: { type: string; path?: string };
+  web: {
+    port: number;
+    autoIncrement: boolean;
+  };
+  logging: { webhook?: string; level: string };
 }
 
 interface BotStatus {

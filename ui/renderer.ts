@@ -11,6 +11,7 @@ interface ElectronAPI {
   onBotStatus: (callback: (status: BotStatus) => void) => void;
   onBotError: (callback: (error: string) => void) => void;
   onConfigLoaded: (callback: (config: BotConfig) => void) => void;
+  onPortDetected: (callback: (port: number) => void) => void;
 }
 
 interface BotConfig {
@@ -23,7 +24,10 @@ interface BotConfig {
     participantRole?: string;
   };
   database: { type: string; path?: string };
-  web: { port: number };
+  web: {
+    port: number;
+    autoIncrement: boolean;
+  };
   logging: { webhook?: string; level: string };
 }
 
@@ -91,6 +95,13 @@ function setupIPCHandlers(): void {
     populateConfigForm(config);
     showDashboard();
   });
+
+  window.electronAPI.onPortDetected?.((port: number) => {
+    localUrlElement.textContent = `http://localhost:${port}`;
+    const networkUrlText = networkUrlElement.textContent || '';
+    const networkIP = networkUrlText.split('://')[1]?.split(':')[0] || 'localhost';
+    networkUrlElement.textContent = `http://${networkIP}:${port}`;
+  });
 }
 
 async function loadNetworkInfo(): Promise<void> {
@@ -135,7 +146,7 @@ function handleConfigSubmit(e: Event): void {
       defaultToRole: (document.getElementById('bot-to-role') as HTMLInputElement).value
     },
     database: { type: 'sqlite', path: './data/dot.db' },
-    web: { port: 3000 },
+    web: { port: 3000, autoIncrement: true },
     logging: { level: 'info' }
   };
 

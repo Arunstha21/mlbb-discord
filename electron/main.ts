@@ -3,6 +3,7 @@ import * as path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 import * as os from 'os';
 import { loadConfig, saveConfig, configToEnv, BotConfig, BotStatus } from './config';
+import { findAvailablePort } from './port-detector';
 
 let mainWindow: BrowserWindow | null = null;
 let webWindow: BrowserWindow | null = null;
@@ -44,16 +45,33 @@ function getNetworkIP(): string {
   return 'localhost';
 }
 
-function startBot(config: BotConfig): void {
+async function startBot(config: BotConfig): Promise<void> {
   if (botProcess) {
     stopBot();
   }
 
-  currentConfig = config;
-  saveConfig(config);
+  // Find available port if configured
+  let port = config.web.port;
+  if (config.web.autoIncrement) {
+    try {
+      port = await findAvailablePort(port);
+    } catch (error) {
+      mainWindow?.webContents.send('bot-error', 'Could not find available port');
+      return;
+    }
+  }
 
-  const env = configToEnv(config);
+  // Update config with actual port
+  const finalConfig = { ...config, web: { ...config.web, port } };
+  currentConfig = finalConfig;
+  saveConfig(finalConfig);
+
+  // Notify renderer of actual port
+  mainWindow?.webContents.send('port-detected', { port });
+
+  const env = configToEnv(finalConfig);
   env.MLBB_CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
+  env.WEB_PORT = port.toString();
 
   // Spawn bot process
   botProcess = spawn(process.execPath, ['dist/index.js'], {
@@ -82,7 +100,7 @@ function startBot(config: BotConfig): void {
     const status: BotStatus = {
       running: false,
       connectedServers: 0,
-      port: config.web.port
+      port: finalConfig.web.port
     };
     mainWindow?.webContents.send('bot-status', status);
     botProcess = null;
@@ -96,7 +114,7 @@ function startBot(config: BotConfig): void {
     const status: BotStatus = {
       running: true,
       connectedServers: 0, // Will be updated by bot
-      port: config.web.port
+      port: finalConfig.web.port
     };
     mainWindow?.webContents.send('bot-status', status);
   }, 1000);
@@ -141,8 +159,8 @@ ipcMain.handle('get-status', (): BotStatus => {
   };
 });
 
-ipcMain.on('start-bot', (_event, config: BotConfig) => {
-  startBot(config);
+ipcMain.on('start-bot', async (_event, config: BotConfig) => {
+  await startBot(config);
 });
 
 ipcMain.on('stop-bot', () => {

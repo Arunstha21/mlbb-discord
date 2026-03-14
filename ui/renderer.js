@@ -43,6 +43,12 @@ function setupIPCHandlers() {
         populateConfigForm(config);
         showDashboard();
     });
+    window.electronAPI.onPortDetected?.((port) => {
+        localUrlElement.textContent = `http://localhost:${port}`;
+        const networkUrlText = networkUrlElement.textContent || '';
+        const networkIP = networkUrlText.split('://')[1]?.split(':')[0] || 'localhost';
+        networkUrlElement.textContent = `http://${networkIP}:${port}`;
+    });
 }
 async function loadNetworkInfo() {
     try {
@@ -83,7 +89,7 @@ function handleConfigSubmit(e) {
             defaultToRole: document.getElementById('bot-to-role').value
         },
         database: { type: 'sqlite', path: './data/dot.db' },
-        web: { port: 3000 },
+        web: { port: 3000, autoIncrement: true },
         logging: { level: 'info' }
     };
     // Basic validation
