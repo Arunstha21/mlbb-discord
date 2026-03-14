@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title><%= title %> - Dot Tournament Admin</title>
+	<link rel="stylesheet" href="/css/reset.css">
+	<link rel="stylesheet" href="/css/variables.css">
+	<link rel="stylesheet" href="/css/layout.css">
+	<link rel="stylesheet" href="/css/components.css">
+	<link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+	<div class="app-container">
+		<header class="header">
+			<div class="header-left">
+				<h1 class="logo">Dot Tournament Admin</h1>
+			</div>
+			<div class="header-right">
+				<div class="status-indicator">
+					<span class="status-dot"></span>
+					<span class="status-text">System Online</span>
+				</div>
+			</div>
+		</header>
+
+		<div class="main-layout">
+			<nav class="sidebar">
+				<a href="/tournaments" class="nav-item <%= path.startsWith('/tournaments') ? 'active' : '' %>">
+					<span class="nav-label">Tournaments</span>
+				</a>
+				<a href="/system" class="nav-item <%= path === '/system' ? 'active' : '' %>">
+					<span class="nav-label">System Status</span>
+				</a>
+				<a href="/config" class="nav-item <%= path === '/config' ? 'active' : '' %>">
+					<span class="nav-label">Configuration</span>
+				</a>
+			</nav>
+
+			<main class="content">
+				<%- body %>
+			</main>
+		</div>
+	</div>
+
+	<script src="/js/app.js"></script>
+	<%- defineContent('script') %>
+</body>
+</html>

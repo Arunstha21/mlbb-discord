@@ -1,0 +1,55 @@
+{
+	"name": "dot-tournament-bot",
+	"version": "0.1.0",
+	"description": "A Discord bot to facilitate organising Challonge tournaments and verify submitted decks.",
+	"private": true,
+	"scripts": {
+		"dev": "NODE_NO_WARNINGS=1 nodemon --watch .env -e ts,env --exec ts-node src/index.ts",
+		"start": "node --enable-source-maps --no-deprecation dist/index.js",
+		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
+		"cover": "nyc report",
+		"lint": "eslint src test",
+		"build": "tsc"
+	},
+	"author": "Arun Shrestha",
+	"license": "AGPL-3.0-or-later",
+	"engines": {
+		"node": ">=20",
+		"npm": ">=10"
+	},
+	"dependencies": {
+		"@fast-csv/format": "^5.0.5",
+		"async-mutex": "^0.5.0",
+		"debug": "^4.4.3",
+		"discord.js": "^14.25.1",
+		"dotenv": "^17.3.1",
+		"ejs": "^5.0.1",
+		"express": "^5.2.1",
+		"express-ejs-layouts": "^2.5.1",
+		"make-fetch-happen": "^15.0.4",
+		"pg": "^8.20.0",
+		"reflect-metadata": "^0.2.2",
+		"sql.js": "^1.12.0",
+		"supports-color": "^10.2.2",
+		"typeorm": "^0.3.28"
+	},
+	"devDependencies": {
+		"@alphakretin/essentials": "^6.2.0",
+		"@alphakretin/mocha-ecosystem": "^1.1.0",
+		"@testcontainers/postgresql": "^10.28.0",
+		"@types/debug": "^4.1.12",
+		"@types/express": "^5.0.6",
+		"@types/express-ejs-layouts": "^2.5.4",
+		"@types/make-fetch-happen": "^10.0.4",
+		"@types/sql.js": "^1.4.9",
+		"mocha": "^11.7.5",
+		"nodemon": "^3.1.14"
+	},
+	"eslintConfig": {
+		"extends": "@alphakretin"
+	},
+	"prettier": "@alphakretin/essentials",
+	"nyc": {
+		"extends": "@alphakretin/mocha-ecosystem"
+	}
+}

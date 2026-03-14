@@ -1,0 +1,328 @@
+<div class="system-page">
+	<div class="page-header">
+		<h2 class="page-title">System Status</h2>
+		<span class="badge badge-success" id="node-version">Loading...</span>
+	</div>
+
+	<div class="system-grid">
+		<!-- Stats -->
+		<div class="card">
+			<div class="card-header">
+				<h3 class="card-title">Statistics</h3>
+			</div>
+			<div class="stats-grid">
+				<div class="stat-item">
+					<span class="stat-label">Tournaments</span>
+					<span class="stat-value" id="stat-tournaments">-</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-label">Players</span>
+					<span class="stat-value" id="stat-players">-</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-label">Schedules</span>
+					<span class="stat-value" id="stat-schedules">-</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-label">Discord Guilds</span>
+					<span class="stat-value" id="stat-guilds">-</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- System Details -->
+		<div class="card">
+			<div class="card-header">
+				<h3 class="card-title">System Details</h3>
+			</div>
+			<div class="system-details">
+				<div class="detail-row">
+					<span class="detail-label">Platform</span>
+					<span class="detail-value" id="sys-platform">-</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Uptime</span>
+					<span class="detail-value" id="sys-uptime">-</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Memory</span>
+					<span class="detail-value" id="sys-memory">-</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">CPU Cores</span>
+					<span class="detail-value" id="sys-cpus">-</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Recent Activity -->
+		<div class="card system-activity-card">
+			<div class="card-header">
+				<h3 class="card-title">Recent Activity</h3>
+			</div>
+			<div id="activity-list" class="activity-list">
+				<p class="text-secondary">Loading activity...</p>
+			</div>
+		</div>
+
+		<!-- Logs -->
+		<div class="card system-logs-card">
+			<div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+				<h3 class="card-title">System Logs</h3>
+				<button class="btn btn-secondary btn-sm" onclick="fetchLogs()">Refresh Logs</button>
+			</div>
+			<div id="logs-container" class="logs-container">
+				<div class="logs-loading">Loading logs...</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.system-page { max-width: 1200px; }
+	
+	.page-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+	}
+
+	.system-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.5rem;
+	}
+
+	.system-activity-card, .system-logs-card { grid-column: span 2; }
+
+	.stats-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
+	}
+
+	.stat-item {
+		padding: 1.25rem;
+		background: var(--bg-tertiary);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--border);
+		text-align: center;
+		transition: transform var(--transition-short);
+	}
+	
+	.stat-item:hover {
+		transform: translateY(-2px);
+		border-color: var(--accent);
+	}
+
+	.stat-label {
+		display: block;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--text-secondary);
+		margin-bottom: 0.5rem;
+		font-weight: 600;
+	}
+
+	.stat-value {
+		display: block;
+		font-size: 1.75rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	.system-details {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.detail-row {
+		display: flex;
+		justify-content: space-between;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.detail-row:last-child { border-bottom: none; }
+
+	.detail-label { color: var(--text-secondary); font-size: 0.9rem; }
+	.detail-value { color: var(--text-primary); font-weight: 500; font-size: 0.9rem; font-family: var(--font-mono); }
+
+	.activity-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.activity-item {
+		padding: 0.75rem;
+		background: var(--bg-tertiary);
+		border-radius: var(--radius-sm);
+		font-size: 0.9rem;
+		border-left: 3px solid var(--accent);
+	}
+
+	.logs-container {
+		background: #0d0e12;
+		color: #e2e4e9;
+		font-family: var(--font-mono);
+		padding: 1.25rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--border-medium);
+		max-height: 500px;
+		overflow-y: auto;
+		font-size: 0.825rem;
+		line-height: 1.6;
+		box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+	}
+
+	.log-line {
+		margin-bottom: 0.15rem;
+		padding: 0.15rem 0.5rem;
+		border-radius: 4px;
+		display: flex;
+		gap: 0.75rem;
+		transition: background 0.1s;
+	}
+	
+	.log-line:hover {
+		background: rgba(255,255,255,0.03);
+	}
+
+	.log-time { color: #6e7681; font-weight: 500; min-width: 85px; }
+	.log-ns { font-weight: 600; min-width: 120px; text-transform: lowercase; opacity: 0.9; }
+	.log-msg { color: #f0f6fc; flex: 1; word-break: break-all; }
+
+	/* Log Levels */
+	.log-line[data-level="error"] { background: rgba(248, 113, 113, 0.05); }
+	.log-line[data-level="error"] .log-ns { color: #f87171; }
+	
+	.log-line[data-level="warn"] { background: rgba(251, 191, 36, 0.05); }
+	.log-line[data-level="warn"] .log-ns { color: #fbbf24; }
+	
+	.log-line[data-level="notify"] { color: #818cf8; }
+	.log-line[data-level="notify"] .log-ns { color: #818cf8; }
+
+	.log-line[data-level="info"] .log-ns { color: #34d399; }
+	.log-line[data-level="verbose"] .log-ns { color: #94a3b8; }
+
+	.logs-loading { text-align: center; padding: 3rem; color: var(--text-tertiary); font-style: italic; }
+
+	@media (max-width: 768px) {
+		.system-grid { grid-template-columns: 1fr; }
+		.system-activity-card, .system-logs-card { grid-column: span 1; }
+	}
+</style>
+
+<script>
+	function formatUptime(seconds) {
+		const d = Math.floor(seconds / (3600*24));
+		const h = Math.floor(seconds % (3600*24) / 3600);
+		const m = Math.floor(seconds % 3600 / 60);
+		const s = Math.floor(seconds % 60);
+		
+		const parts = [];
+		if (d > 0) parts.push(`${d}d`);
+		if (h > 0) parts.push(`${h}h`);
+		if (m > 0) parts.push(`${m}m`);
+		parts.push(`${s}s`);
+		return parts.join(' ');
+	}
+
+	function formatBytes(bytes) {
+		if (bytes === 0) return '0 B';
+		const k = 1024;
+		const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+	}
+
+	async function fetchStats() {
+		try {
+			const res = await fetch('/api/system/stats');
+			const data = await res.json();
+
+			if (data.success) {
+				const s = data.data;
+				document.getElementById('stat-tournaments').textContent = s.tournaments;
+				document.getElementById('stat-players').textContent = s.players;
+				document.getElementById('stat-schedules').textContent = s.schedules;
+				document.getElementById('stat-guilds').textContent = s.discordGuilds;
+				
+				// System info
+				document.getElementById('node-version').textContent = s.system.nodeVersion;
+				document.getElementById('sys-platform').textContent = `${s.system.platform} (${s.system.arch})`;
+				document.getElementById('sys-uptime').textContent = formatUptime(s.system.uptime);
+				document.getElementById('sys-memory').textContent = `${formatBytes(s.system.memory.usage)} / ${formatBytes(s.system.memory.total)}`;
+				document.getElementById('sys-cpus').textContent = s.system.cpus;
+			}
+		} catch (error) {
+			console.error('Failed to fetch stats:', error);
+		}
+	}
+
+	async function fetchActivity() {
+		try {
+			const res = await fetch('/api/system/activity?limit=6');
+			const data = await res.json();
+			const list = document.getElementById('activity-list');
+
+			if (data.success && data.data.length > 0) {
+				list.innerHTML = data.data.map(item => `
+					<div class="activity-item">
+						<span>${item.message}</span>
+					</div>
+				`).join('');
+			} else {
+				list.innerHTML = '<p class="text-secondary">No recent activity</p>';
+			}
+		} catch (error) {
+			console.error('Failed to fetch activity:', error);
+		}
+	}
+
+	async function fetchLogs() {
+		try {
+			const container = document.getElementById('logs-container');
+			const res = await fetch('/api/system/logs');
+			const data = await res.json();
+
+			if (data.success && data.data.length > 0) {
+				container.innerHTML = data.data.map(log => {
+					const time = new Date(log.timestamp).toLocaleTimeString([], { hour12: false });
+					const level = log.namespace.split(':')[0]; // get error/warn/etc
+					return `
+						<div class="log-line" data-level="${level}">
+							<span class="log-time">${time}</span>
+							<span class="log-ns">${log.namespace}</span>
+							<span class="log-msg">${escapeHtml(log.message)}</span>
+						</div>
+					`;
+				}).join('');
+				// Scroll to bottom
+				container.scrollTop = container.scrollHeight;
+			} else {
+				container.innerHTML = '<div class="logs-loading">No logs available</div>';
+			}
+		} catch (error) {
+			console.error('Failed to fetch logs:', error);
+		}
+	}
+
+	function escapeHtml(text) {
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
+	// Initial load
+	fetchStats();
+	fetchActivity();
+	fetchLogs();
+
+	// Auto refresh basic stats every 30s
+	setInterval(fetchStats, 30000);
+</script>

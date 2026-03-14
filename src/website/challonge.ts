@@ -1,0 +1,483 @@
+import { Mutex } from "async-mutex";
+import npmFetch from "make-fetch-happen";
+import { tmpdir } from "os";
+import { ChallongeAPIError } from "../util/errors";
+
+export interface WebsitePlayer {
+	challongeId: number;
+	discordId: string;
+	name: string;
+	active: boolean; // !dropped
+	rank: number;
+	seed: number;
+}
+
+export type ChallongeTieBreaker =
+	| "match wins"
+	| "game wins"
+	| "game win percentage"
+	| "points scored"
+	| "points difference"
+	| "match wins vs tied"
+	| "median buchholz";
+
+// interface structure WIP as fleshed out command-by-command
+export interface WebsiteTournament {
+	id: string;
+	name: string;
+	desc: string;
+	url: string;
+	players: WebsitePlayer[];
+	rounds: number;
+	tieBreaks: ChallongeTieBreaker[];
+	state?: string; // Challonge tournament state: pending, underway, complete
+	format?: TournamentType; // Challonge tournament type
+	signupCap?: number | null; // Participant limit from Challonge
+}
+
+export type MatchState = "pending" | "open" | "underway" | "complete";
+
+export interface WebsiteMatch {
+	player1: number | null;
+	player2: number | null;
+	matchId: number;
+	state: MatchState;
+	open: boolean;
+	round: number;
+}
+
+type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
+type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
+
+interface ChallongeTournamentSettings {
+	name?: string;
+	tournament_type?: TournamentType;
+	url?: string;
+	subdomain?: string;
+	description?: string;
+	open_signup?: boolean;
+	hold_third_place_match?: boolean;
+	pts_for_match_win?: number;
+	pts_for_match_tie?: number;
+	pts_for_game_win?: number;
+	pts_for_game_tie?: number;
+	pts_for_bye?: number;
+	swiss_rounds?: number;
+	ranked_by?: RankedBy;
+	rr_pts_for_match_win?: number;
+	rr_pts_for_match_tie?: number;
+	rr_pts_for_game_win?: number;
+	rr_pts_for_game_tie?: number;
+	accept_attachments?: boolean;
+	hide_forum?: boolean;
+	show_rounds?: boolean;
+	private?: boolean;
+	notify_users_when_matches_open?: boolean;
+	notify_users_when_the_tournament_ends?: boolean;
+	sequential_pairings?: boolean;
+	signup_cap?: number;
+	start_at?: Date;
+	check_in_duration?: number;
+	grand_finals_modifier?: null | "single match" | "skip";
+	tie_breaks?: string[]; // undocumented, hoping exists
+}
+
+interface ChallongeParticipant {
+	participant: {
+		active: boolean;
+		checked_in_at: null | Date;
+		created_at: Date;
+		final_rank: null | number;
+		group_id: null | string;
+		icon: null | string;
+		id: number;
+		invitation_id: null | number;
+		invite_email: null | string;
+		misc: null | string;
+		name: string;
+		on_waiting_list: boolean;
+		seed: number;
+		tournament_id: number;
+		updated_at: Date;
+		challonge_username: null | string;
+		challonge_email_address_verified: null | boolean;
+		removable: boolean;
+		participatable_or_invitation_attached: boolean;
+		confirm_remove: boolean;
+		invitation_pending: boolean;
+		display_name_with_invitation_email_address: string;
+		email_hash: null | string;
+		username: null | string;
+		attached_participatable_portrait_url: null | string;
+		can_check_in: boolean;
+		checked_in: boolean;
+		reactivatable: boolean;
+	};
+}
+
+type ChallongeMatchState = "all" | "pending" | "open" | "underway" | "complete";
+
+export interface ChallongeMatch {
+	match: {
+		attachment_count: null | number;
+		created_at: Date;
+		group_id: null | number;
+		has_attachment: boolean;
+		id: number;
+		identifier: string;
+		location: null | string;
+		loser_id: null | number;
+		player1_id: number;
+		player1_is_prereq_match_loser: boolean;
+		player1_prereq_match_id: null | number;
+		player1_votes: null | number;
+		player2_id: number;
+		player2_is_prereq_match_loser: boolean;
+		player2_prereq_match_id: null | number;
+		player2_votes: null | number;
+		round: number;
+		scheduled_time: null | Date;
+		started_at: Date;
+		state: ChallongeMatchState;
+		tournament_id: number;
+		underway_at: null | Date;
+		updated_at: Date;
+		winner_id: null | number;
+		prerequisite_match_ids_csv: string;
+		scores_csv: string;
+	};
+}
+
+interface ChallongeTournament {
+	tournament: {
+		accept_attachments: boolean;
+		allow_participant_match_reporting: boolean;
+		anonymous_voting: boolean;
+		category: null;
+		check_in_duration: null | number;
+		completed_at: null | Date;
+		created_at: Date;
+		created_by_api: boolean;
+		credit_capped: boolean;
+		description: string;
+		game_id: number;
+		group_stages_enabled: boolean;
+		hide_forum: boolean;
+		hide_seeds: boolean;
+		hold_third_place_match: boolean;
+		id: number;
+		max_predictions_per_user: number;
+		name: string;
+		notify_users_when_matches_open: boolean;
+		notify_users_when_the_tournament_ends: boolean;
+		open_signup: boolean;
+		participants_count: number;
+		prediction_method: number;
+		predictions_opened_at: null | Date;
+		private: boolean;
+		progress_meter: number;
+		pts_for_bye: number;
+		pts_for_game_tie: number;
+		pts_for_game_win: number;
+		pts_for_match_tie: number;
+		pts_for_match_win: number;
+		quick_advance: boolean;
+		ranked_by: RankedBy;
+		require_score_agreement: boolean;
+		rr_pts_for_game_tie: number;
+		rr_pts_for_game_win: number;
+		rr_pts_for_match_tie: number;
+		rr_pts_for_match_win: number;
+		sequential_pairings: boolean;
+		show_rounds: boolean;
+		signup_cap: null | number;
+		start_at: null | Date;
+		started_at: null | Date;
+		started_checking_in_at: null | Date;
+		state: string;
+		swiss_rounds: number;
+		teams: boolean;
+		tie_breaks: null | string[];
+		tournament_type: TournamentType;
+		updated_at: Date;
+		url: string;
+		description_source: string;
+		subdomain: null | string;
+		full_challonge_url: string;
+		live_image_url: string;
+		sign_up_url: null | string;
+		review_before_finalizing: boolean;
+		accepting_predictions: boolean;
+		participants_locked: boolean;
+		game_name: string;
+		participants_swappable: boolean;
+		team_convertable: boolean;
+		group_stages_were_started: boolean;
+		participants?: ChallongeParticipant[];
+		matches?: ChallongeMatch[];
+	};
+}
+
+type IndexMatchResponse = ChallongeMatch[];
+
+interface UpdateMatchSettings {
+	scores_csv?: string;
+	winner_id?: number | "tie";
+	player1_votes?: number;
+	player2_votes?: number;
+}
+
+interface StartTournamentSettings {
+	include_participants?: 0 | 1;
+	include_matches?: 0 | 1;
+}
+
+// Challonge has weak ETags, so we use a client aware of HTTP cache semantics
+// to improve performance for frequently called APIs.
+const cacheAwareFetch = npmFetch.defaults({
+	cachePath: tmpdir(),
+	retry: 1
+});
+
+export class WebsiteWrapperChallonge {
+	private baseUrl: string;
+	private mutex = new Mutex();
+	constructor(user: string, token: string) {
+		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
+	}
+
+	// Through empirical testing, Challonge handles concurrency tremendously poorly.
+	// Multiple requests on the same tournament when one has yet to respond could fatally break
+	// the tournament outright. This synchronizes all requests made by this client,
+	// so we only make one request at a time, though we probably only need to synchronize
+	// requests on the same tournament.
+	private async fetch<T>(url: string, options?: RequestInit): Promise<T> {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const response = await this.mutex.runExclusive(async () => await cacheAwareFetch(url, options as any));
+		const body = await response.json().catch(() => ({
+			errors: [
+				`Invalid ${response.headers.get("Content-Type")} response: ${response.status} ${response.statusText}`
+			]
+		}));
+		if (body.errors) {
+			throw new ChallongeAPIError(body.errors[0]);
+		}
+		// Basic runtime validation for critical response structures
+		// For full schema validation, consider using ajv with JSON schemas
+		this.validateResponse(body);
+		return body as T;
+	}
+
+	// Lightweight runtime validation for critical fields
+	// This provides basic type safety without the overhead of full ajv schemas
+	private validateResponse(body: unknown): void {
+		if (!body || typeof body !== "object") {
+			throw new ChallongeAPIError("Invalid response: response body is not an object");
+		}
+		// Add specific validations for known response types here as needed
+		// Example: validate required fields exist and have correct types
+	}
+
+	private wrapTournament(t: ChallongeTournament): WebsiteTournament {
+		const tournament = t.tournament;
+		const p = tournament.participants;
+		const participants = p ? p.map(this.wrapPlayer) : [];
+		return {
+			id: tournament.url,
+			name: tournament.name,
+			desc: tournament.description,
+			url: `https://challonge.com/${tournament.url}`,
+			players: participants,
+			rounds: tournament.swiss_rounds,
+			tieBreaks: tournament.tie_breaks
+				? (tournament.tie_breaks as ChallongeTieBreaker[])
+				: ["match wins vs tied", "median buchholz", "points difference"], // challonge default in UI
+			state: tournament.state,
+			format: tournament.tournament_type,
+			signupCap: tournament.signup_cap
+		};
+	}
+
+	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
+		const settings: ChallongeTournamentSettings = {
+			name,
+			description: desc
+		};
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({ tournament: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+	}
+
+	private async showTournament(
+		tournamentId: string,
+		includeParticipants = false,
+		includeMatches = false
+	): Promise<ChallongeTournament> {
+		return await this.fetch<ChallongeTournament>(
+			`${this.baseUrl}tournaments/${tournamentId}.json?include_participants=${Number(
+				includeParticipants
+			)}&include_matches=${Number(includeMatches)}`
+		);
+	}
+
+	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
+		const tournament = await this.showTournament(tournamentId, true, true);
+		return this.wrapTournament(tournament);
+	}
+
+	private async startTournamentRemote(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}/start.json`, {
+			method: "POST",
+			body: JSON.stringify(settings),
+			headers: { "Content-Type": "application/json" }
+		});
+	}
+
+	public async startTournament(tournamentId: string): Promise<void> {
+		await this.startTournamentRemote(tournamentId, { include_matches: 0, include_participants: 0 });
+	}
+
+
+	/**
+	 * Bulk add participants to Challonge tournament in a single API call.
+	 * This is much more efficient than individual calls when adding many participants.
+	 *
+	 * @param tournamentId - Challonge tournament ID
+	 * @param playerNames - Array of team/player names to add
+	 * @returns Map of player name to Challonge participant ID
+	 */
+	public async bulkAddParticipants(tournamentId: string, playerNames: string[]): Promise<Map<string, number>> {
+		if (playerNames.length === 0) {
+			return new Map();
+		}
+
+		// Challonge bulk add endpoint expects: { participants: [{ name: "..." }, { name: "..." }] }
+		const participantsData = playerNames.map(name => ({ name }));
+
+		type BulkAddResponse = ChallongeParticipant[];
+
+		const response = await this.fetch<BulkAddResponse>(
+			`${this.baseUrl}tournaments/${tournamentId}/participants/bulk_add.json`,
+			{
+				method: "POST",
+				body: JSON.stringify({ participants: participantsData }),
+				headers: { "Content-Type": "application/json" }
+			}
+		);
+
+		const result = new Map<string, number>();
+		for (const participant of response) {
+			result.set(participant.participant.name, participant.participant.id);
+		}
+
+		return result;
+	}
+
+	private async indexMatches(
+		tournamentId: string,
+		state?: ChallongeMatchState,
+		participantId?: number
+	): Promise<IndexMatchResponse> {
+		let url = `${this.baseUrl}tournaments/${tournamentId}/matches.json`;
+		if (state) {
+			url += `?state=${state}`;
+			if (participantId) {
+				url += `&participant_id=${participantId}`;
+			}
+		} else if (participantId) {
+			url += `?participant_id=${participantId}`;
+		}
+		return await this.fetch<IndexMatchResponse>(url);
+	}
+
+	private wrapMatch(m: ChallongeMatch): WebsiteMatch {
+		const match = m.match;
+		const state: MatchState = (match.state === "underway" ? "underway" : match.state) as MatchState;
+		return {
+			player1: match.player1_id ?? null,
+			player2: match.player2_id ?? null,
+			matchId: match.id,
+			state,
+			open: match.state === "open" || match.state === "underway",
+			round: match.round
+		};
+	}
+
+	public async getMatches(tournamentId: string, open = false, playerId?: number): Promise<WebsiteMatch[]> {
+		const webMatches = await this.indexMatches(tournamentId, open ? "open" : undefined, playerId);
+		return webMatches.map(this.wrapMatch);
+	}
+
+	private async updateMatch(
+		tournamentId: string,
+		match: number,
+		settings: UpdateMatchSettings
+	): Promise<ChallongeMatch> {
+		return await this.fetch<ChallongeMatch>(`${this.baseUrl}tournaments/${tournamentId}/matches/${match}.json`, {
+			method: "PUT",
+			body: JSON.stringify({ match: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+	}
+
+	public async submitScore(
+		tournamentId: string,
+		match: WebsiteMatch,
+		winner: number,
+		winnerScore: number,
+		loserScore: number
+	): Promise<void> {
+		// submitScore requires a match with valid players (open/underway state)
+		// This should never be called with pending matches (null player IDs)
+		if (match.player1 === null || match.player2 === null) {
+			throw new ChallongeAPIError("Cannot submit score for a match with undetermined players");
+		}
+		const score = match.player1 === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
+		await this.updateMatch(tournamentId, match.matchId, {
+			winner_id: winnerScore === loserScore ? "tie" : winner,
+			scores_csv: score
+		});
+	}
+
+	private async indexPlayers(tournamentId: string): Promise<ChallongeParticipant[]> {
+		return await this.fetch<ChallongeParticipant[]>(`${this.baseUrl}tournaments/${tournamentId}/participants.json`);
+	}
+
+	private wrapPlayer(p: ChallongeParticipant): WebsitePlayer {
+		const player = p.participant;
+		return {
+			challongeId: player.id,
+			discordId: player.misc || "DUMMY",
+			name: player.name || player.username || "",
+			active: player.active,
+			rank: player.final_rank || -1,
+			seed: player.seed
+		};
+	}
+
+	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
+		const players = await this.indexPlayers(tournamentId);
+		return players.map(this.wrapPlayer);
+	}
+
+	private async finaliseTournament(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}/finalize.json`, {
+			method: "POST",
+			body: JSON.stringify(settings),
+			headers: { "Content-Type": "application/json" }
+		});
+	}
+
+	public async finishTournament(tournamentId: string): Promise<void> {
+		await this.finaliseTournament(tournamentId, { include_matches: 0, include_participants: 0 });
+	}
+
+	public async getPlayer(tournamentId: string, playerId: number): Promise<WebsitePlayer> {
+		const response = await this.fetch<ChallongeParticipant>(
+			`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`
+		);
+		return this.wrapPlayer(response);
+	}
+}

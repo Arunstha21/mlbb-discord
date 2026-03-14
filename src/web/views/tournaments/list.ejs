@@ -1,0 +1,375 @@
+<div class="tournaments-page">
+	<div class="page-header">
+		<h2 class="page-title">Tournaments</h2>
+		<button class="btn btn-primary" onclick="showCreateModal()">+ Create Tournament</button>
+	</div>
+
+	<div class="filters">
+		<button class="filter-btn active" data-filter="all">All</button>
+		<button class="filter-btn" data-filter="preparing">Preparing</button>
+		<button class="filter-btn" data-filter="in progress">In Progress</button>
+		<button class="filter-btn" data-filter="complete">Complete</button>
+		<input type="text" class="search-input" placeholder="Search tournaments..." id="search-input">
+	</div>
+
+	<div class="table-container">
+		<table class="table" id="tournaments-table">
+			<thead>
+				<tr>
+					<th>Tournament ID</th>
+					<th>Tournament Name</th>
+					<th>Status</th>
+					<th>Format</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="tournaments-body">
+				<tr>
+					<td colspan="5" class="loading-row">
+						<div class="spinner"></div> Loading tournaments...
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!-- Create Tournament Modal -->
+<div id="create-modal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeCreateModal()">
+	<div class="modal">
+
+		<div class="modal-header">
+			<h3 class="modal-title">Create Tournament</h3>
+			<button class="modal-close" onclick="closeCreateModal()">&times;</button>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label class="form-label">Challonge URL</label>
+				<input type="url" class="form-input" id="create-url" placeholder="https://challonge.com/xyz" required>
+				<div class="form-help">Enter the Challonge tournament URL</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Tournament Name</label>
+				<input type="text" class="form-input" id="create-name" placeholder="My Tournament" required>
+				<div class="form-help">Internal name for the bot (must be unique)</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Server</label>
+				<select class="form-input" id="create-server" required>
+					<option value="">Loading servers...</option>
+				</select>
+				<div class="form-help">Select a Discord server the bot is in</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+			<button class="btn btn-primary" onclick="createTournament()">Create</button>
+		</div>
+	</div>
+</div>
+
+<style>
+.tournaments-page {
+	max-width: 1200px;
+}
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+}
+
+.filters {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+}
+
+.filter-btn {
+	padding: 8px 16px;
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: all var(--transition-normal);
+}
+
+.filter-btn:hover {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+}
+
+.filter-btn.active {
+	background: var(--accent);
+	color: white;
+	border-color: var(--accent);
+}
+
+.search-input {
+	flex: 1;
+	min-width: 200px;
+	padding: 8px 12px;
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+}
+
+.search-input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.loading-row {
+	text-align: center;
+	padding: 40px !important;
+	color: var(--text-secondary);
+}
+
+.status-badge {
+	display: inline-block;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 60px 20px;
+	color: var(--text-secondary);
+}
+
+.empty-state-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+}
+
+.empty-state-text {
+	font-size: 16px;
+	margin-bottom: 8px;
+}
+
+.empty-state-help {
+	font-size: 14px;
+}
+</style>
+
+<%- contentFor('script') %>
+<script>
+let tournaments = [];
+let currentFilter = 'all';
+let searchQuery = '';
+let servers = [];
+
+// Load servers from API
+async function loadServers(retryCount = 0) {
+	try {
+		const response = await Dot.API.get('/api/servers');
+		servers = response.data || [];
+
+		const select = document.getElementById('create-server');
+		if (servers.length === 0) {
+			select.innerHTML = '<option value="">No servers available</option>';
+		} else {
+			select.innerHTML = '<option value="">Select a server...</option>' +
+				servers.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join('');
+		}
+	} catch (error) {
+		// API wrapper already handles logging and toast if needed, 
+		// but we can catch specific 503s for retry
+		if (error.message.includes('not ready') && retryCount < 5) {
+			console.log(`Bot not ready, retrying server load (${retryCount + 1}/5)...`);
+			setTimeout(() => loadServers(retryCount + 1), 2000);
+			return;
+		}
+		
+		console.error('Failed to load servers:', error);
+		const select = document.getElementById('create-server');
+		if (select) {
+			select.innerHTML = `<option value="">${escapeHtml(error.message)}</option>`;
+		}
+	}
+}
+
+
+
+
+// Load tournaments from API
+async function loadTournaments() {
+	try {
+		console.log('Loading tournaments...');
+		console.log('Dot API available:', typeof Dot !== 'undefined');
+		const response = await Dot.API.get('/api/tournaments');
+		console.log('Tournaments response:', response);
+		tournaments = response.data;
+		renderTournaments();
+	} catch (error) {
+		console.error('Failed to load tournaments:', error);
+		console.error('Error details:', error.message, error.stack);
+		document.getElementById('tournaments-body').innerHTML = `
+			<tr>
+				<td colspan="5" class="empty-state">
+					Failed to load tournaments
+				</td>
+			</tr>
+		`;
+	}
+}
+
+// Render tournaments table
+function renderTournaments() {
+	const tbody = document.getElementById('tournaments-body');
+
+	// Filter tournaments
+	const filtered = tournaments.filter(t => {
+		const matchesFilter = currentFilter === 'all' || t.status === currentFilter;
+		const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+		                      t.id.toLowerCase().includes(searchQuery.toLowerCase());
+		return matchesFilter && matchesSearch;
+	});
+
+	if (filtered.length === 0) {
+		tbody.innerHTML = `
+			<tr>
+				<td colspan="5" class="empty-state">
+					<div class="empty-state-text">No tournaments found</div>
+					<div class="empty-state-help">Create a new tournament to get started</div>
+				</td>
+			</tr>
+		`;
+		return;
+	}
+
+	tbody.innerHTML = filtered.map(t => `
+		<tr>
+			<td><code>${escapeHtml(t.id)}</code></td>
+			<td>
+				<a href="/tournaments/${t.id}" class="tournament-link">
+					<strong>${escapeHtml(t.name)}</strong>
+				</a>
+			</td>
+			<td><span class="badge badge-${getStatusBadgeClass(t.status)}">${t.status}</span></td>
+			<td>${t.format || '—'}</td>
+			<td>
+				<div class="action-buttons">
+					<button class="btn btn-sm btn-primary" onclick="syncTournament('${t.id}', '${escapeHtml(t.name)}')">Sync</button>
+					<a href="/tournaments/${t.id}" class="btn btn-sm btn-secondary">View</a>
+					<button class="btn btn-sm btn-danger" onclick="deleteTournament('${t.id}')">Delete</button>
+				</div>
+			</td>
+		</tr>
+	`).join('');
+}
+
+// Get badge class for status
+function getStatusBadgeClass(status) {
+	switch (status) {
+		case 'preparing': return 'warning';
+		case 'in progress': return 'info';
+		case 'complete': return 'success';
+		default: return 'secondary';
+	}
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+	btn.addEventListener('click', () => {
+		document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+		btn.classList.add('active');
+		currentFilter = btn.dataset.filter;
+		renderTournaments();
+	});
+});
+
+// Search input
+document.getElementById('search-input').addEventListener('input', (e) => {
+	searchQuery = e.target.value;
+	renderTournaments();
+});
+
+// Create modal
+function showCreateModal() {
+	document.getElementById('create-modal').style.display = 'flex';
+}
+
+function closeCreateModal() {
+	document.getElementById('create-modal').style.display = 'none';
+	// Clear form
+	document.getElementById('create-url').value = '';
+	document.getElementById('create-name').value = '';
+	document.getElementById('create-server').value = '';
+}
+
+// Create tournament
+async function createTournament() {
+	const url = document.getElementById('create-url').value.trim();
+	const name = document.getElementById('create-name').value.trim();
+	const server = document.getElementById('create-server').value.trim();
+
+	if (!url || !name || !server) {
+		Dot.Toast.error('Please fill in all fields');
+		return;
+	}
+
+	try {
+		// Create tournament
+		const createResponse = await Dot.API.post('/api/tournaments', { url, name, server });
+		Dot.Toast.success('Tournament created successfully. Syncing...');
+
+		// Auto-sync after creation
+		try {
+			await Dot.API.post(`/api/tournaments/${name}/sync`);
+			Dot.Toast.success('Tournament synced successfully!');
+		} catch (syncError) {
+			console.error('Auto-sync failed:', syncError);
+			Dot.Toast.warning('Tournament created but sync failed. Try syncing manually.');
+		}
+
+		closeCreateModal();
+		loadTournaments();
+	} catch (error) {
+		// Error already shown by API wrapper
+	}
+}
+
+// Sync tournament
+async function syncTournament(id, name) {
+	try {
+		Dot.Toast.info(`Syncing tournament "${name}"...`);
+		await Dot.API.post(`/api/tournaments/${id}/sync`);
+		Dot.Toast.success(`Tournament "${name}" synced successfully!`);
+		loadTournaments();
+	} catch (error) {
+		console.error('Failed to sync tournament:', error);
+		Dot.Toast.error(`Failed to sync tournament "${name}"`);
+	}
+}
+
+// Delete tournament
+async function deleteTournament(id) {
+	if (!confirm(`Are you sure you want to delete tournament "${id}"?`)) {
+		return;
+	}
+
+	try {
+		await Dot.API.delete(`/api/tournaments/${id}`);
+		Dot.Toast.success('Tournament deleted');
+		loadTournaments();
+	} catch (error) {
+		// Error already shown by API wrapper
+	}
+}
+
+// Utility functions
+function escapeHtml(text) {
+	const div = document.createElement('div');
+	div.textContent = text;
+	return div.innerHTML;
+}
+
+// Load on page load
+document.addEventListener('DOMContentLoaded', () => {
+	loadServers();
+	loadTournaments();
+});
+</script>

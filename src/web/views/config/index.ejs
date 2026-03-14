@@ -1,0 +1,129 @@
+<div class="config-page">
+	<div class="page-header">
+		<h2 class="page-title">System Configuration</h2>
+	</div>
+
+	<% if (locals.success) { %>
+		<div class="alert alert-success">Configuration saved successfully.</div>
+	<% } %>
+	
+	<% if (locals.error) { %>
+		<div class="alert alert-danger"><%= error %></div>
+	<% } %>
+
+	<% if (locals.serverRestart) { %>
+		<div class="alert alert-warning">
+			<strong>Server restart required:</strong> Changes to <code>SQLITE_DB</code> require a full application restart to take effect. Please restart the backend process entirely.
+		</div>
+	<% } else if (locals.botRestart) { %>
+		<div class="alert alert-warning">
+			<strong>Bot restart required:</strong> Changes to Prefix or Role require the bot client to restart to reflect these properly. Please restart the application.
+		</div>
+	<% } %>
+
+	<div class="card">
+		<div class="card-header">
+			<h3 class="card-title">Environment Variables</h3>
+            <p class="text-secondary" style="font-size: 0.85rem; margin-top: 0.25rem;">
+                Manage your environment variables below. Note that DISCORD_TOKEN is hidden for security.
+            </p>
+		</div>
+		<form method="POST" action="/config" class="form" style="padding: 1.25rem;">
+			<div class="form-grid">
+				<% Object.entries(configData).forEach(([key, value]) => { %>
+					<div class="form-group">
+						<label class="form-label" for="<%= key %>"><%= key %></label>
+						<input type="text" id="<%= key %>" name="<%= key %>" class="form-input" value="<%= value %>">
+					</div>
+				<% }); %>
+			</div>
+			
+			<div class="form-actions" style="margin-top: 1.5rem;">
+				<button type="submit" class="btn btn-primary">Save Configuration</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<style>
+	.config-page { 
+		max-width: 800px; 
+		margin: 0 auto; 
+	}
+	
+	.page-header {
+		margin-bottom: 2rem;
+	}
+
+	.form-grid { 
+		display: grid; 
+		gap: 1.25rem; 
+	}
+
+	.form-group { 
+		display: flex; 
+		flex-direction: column; 
+		gap: 0.5rem; 
+	}
+
+	.form-label { 
+		font-size: 0.85rem; 
+		font-weight: 600; 
+		color: var(--text-secondary); 
+		letter-spacing: 0.02em;
+	}
+
+	.form-input { 
+		padding: 0.65rem; 
+		border-radius: var(--radius-sm); 
+		border: 1px solid var(--border); 
+		background: var(--bg-tertiary);
+		color: var(--text-primary);
+		font-family: var(--font-mono, monospace);
+		font-size: 0.9rem;
+		transition: border-color var(--transition-short);
+	}
+
+	.form-input:focus {
+		outline: none;
+		border-color: var(--accent);
+	}
+
+	.alert { 
+		padding: 1rem; 
+		border-radius: var(--radius-md); 
+		margin-bottom: 1.5rem; 
+		font-weight: 500;
+	}
+
+	.alert-success { 
+		background: rgba(52, 211, 153, 0.1); 
+		border: 1px solid rgba(52, 211, 153, 0.3); 
+		color: #34d399; 
+	}
+
+	.alert-danger { 
+		background: rgba(248, 113, 113, 0.1); 
+		border: 1px solid rgba(248, 113, 113, 0.3); 
+		color: #f87171; 
+	}
+
+	.alert-warning {
+		background: rgba(251, 191, 36, 0.1);
+		border: 1px solid rgba(251, 191, 36, 0.3);
+		color: #fbbf24;
+	}
+	
+	.text-secondary {
+		color: var(--text-secondary);
+	}
+</style>
+
+<script>
+	// Remove query parameters from the URL so that "Restart required" or "Success" 
+	// alerts don't persist if the user refreshes the page manually after a restart.
+	if (window.history.replaceState && window.location.search) {
+		const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+		window.history.replaceState({ path: newUrl }, "", newUrl);
+	}
+</script>

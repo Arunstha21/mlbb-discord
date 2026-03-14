@@ -1,0 +1,39 @@
+<!-- error.html -->
+<div class="error-page">
+	<div class="error-content">
+		<div class="error-code"><%= title %></div>
+		<p class="error-message"><%= message %></p>
+		<a href="/" class="btn btn-primary">← Back to Dashboard</a>
+	</div>
+</div>
+
+<style>
+.error-page {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 60vh;
+}
+
+.error-content {
+	text-align: center;
+	max-width: 440px;
+}
+
+.error-code {
+	font-family: var(--font-display);
+	font-size: 72px;
+	font-weight: 800;
+	letter-spacing: -0.05em;
+	line-height: 1;
+	color: var(--text-tertiary);
+	margin-bottom: 16px;
+}
+
+.error-message {
+	font-size: 16px;
+	color: var(--text-secondary);
+	margin-bottom: 28px;
+	line-height: 1.6;
+}
+</style>
