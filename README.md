@@ -46,6 +46,34 @@ environment variable. In the future, this will also be configurable per server.
 - [Visual Flow Diagrams](docs/FLOW_DIAGRAMS.md) - ASCII flowcharts for all processes
 - [CLI utilities](docs/usage-cli.md) - Command-line administrative tools
 
+## Desktop App
+
+A desktop application is available for easy deployment without requiring Node.js or Docker setup.
+
+### Building the Desktop App
+
+```bash
+# Build for Windows
+npm run build:win
+
+# Build for macOS
+npm run build:mac
+
+# Build for both
+npm run build:all
+```
+
+Installers are created in `dist/installers/`.
+
+### Using the Desktop App
+
+1. Run the installer and launch MLBB Tournament Bot
+2. Enter your Discord bot token and Challonge credentials
+3. Click "Save & Start Bot"
+4. Access the web interface via the "🌐 Web Interface" button
+
+See [docs/DESKTOP_APP_SETUP.md](docs/DESKTOP_APP_SETUP.md) for detailed setup instructions.
+
 ## Development
 
 Dot is written in TypeScript. It targets Node.js 20+ and can be run with or without Docker.
