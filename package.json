@@ -8,13 +8,43 @@
 		"start": "node --enable-source-maps --no-deprecation dist/index.js",
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
-		"lint": "eslint src test",
+		"lint": "eslint src",
 		"build": "tsc",
 		"electron:dev": "electron ./dist/electron/main.js",
 		"electron:build": "tsc -p electron/tsconfig.json && tsc -p ui/tsconfig.json",
 		"build:win": "npm run build && npm run electron:build && electron-builder --win",
 		"build:mac": "npm run build && npm run electron:build && electron-builder --mac",
 		"build:all": "npm run build && npm run electron:build && electron-builder --win --mac"
+	},
+	"main": "dist/electron/main.js",
+	"build": {
+		"appId": "com.mlbb.tournament-bot",
+		"productName": "MLBB Tournament Bot",
+		"directories": {
+			"output": "dist/installers",
+			"buildResources": "assets"
+		},
+		"files": [
+			"dist/electron/**/*",
+			"dist/src/**/*",
+			"ui/**/*",
+			"data/**/*"
+		],
+		"win": {
+			"target": "nsis",
+			"icon": "assets/icon.ico"
+		},
+		"mac": {
+			"target": "dmg",
+			"icon": "assets/icon.icns",
+			"category": "public.app-category.utilities"
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true,
+			"createDesktopShortcut": true,
+			"createStartMenuShortcut": true
+		}
 	},
 	"author": "Arun Shrestha",
 	"license": "AGPL-3.0-or-later",
