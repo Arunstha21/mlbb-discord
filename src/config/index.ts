@@ -1,5 +1,38 @@
 import dotenv from "dotenv";
-dotenv.config();
+
+// Check if running in Electron with JSON config
+let useJsonConfig = false;
+
+// Check for config.json path passed via environment
+const configPath = process.env.MLBB_CONFIG_PATH;
+if (configPath) {
+	try {
+		const fs = require('fs');
+		if (fs.existsSync(configPath)) {
+			const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+			// Set environment variables from config
+			process.env.DISCORD_TOKEN = config.discord.token;
+			process.env.CHALLONGE_USERNAME = config.challonge.username;
+			process.env.CHALLONGE_TOKEN = config.challonge.token;
+			process.env.DOT_DEFAULT_PREFIX = config.bot.defaultPrefix;
+			process.env.DOT_DEFAULT_TO_ROLE = config.bot.defaultToRole;
+			process.env.DOT_PARTICIPANT_ROLE = config.bot.participantRole || 'Participant';
+			process.env.SQLITE_DB = config.database.path || './data/dot.db';
+			process.env.POSTGRESQL_URL = config.database.url || '';
+			process.env.WEB_PORT = config.web.port?.toString() || '3000';
+			process.env.DOT_LOGGER_WEBHOOK = config.logging.webhook || '';
+			process.env.NODE_ENV = 'production';
+			useJsonConfig = true;
+		}
+	} catch (error) {
+		console.error('Error loading JSON config:', error);
+	}
+}
+
+// Fallback to dotenv if not using JSON config
+if (!useJsonConfig) {
+	dotenv.config();
+}
 
 function assertEnv(envvar: string): string {
 	const value = process.env[envvar];
