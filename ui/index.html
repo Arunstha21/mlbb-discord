@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLBB Tournament Bot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="config-screen" class="screen">
+      <h1>MLBB Tournament Bot - Setup</h1>
+      <form id="config-form">
+        <h2>Discord Configuration</h2>
+        <label>Bot Token: <input type="password" id="discord-token" required></label>
+
+        <h2>Challonge Configuration</h2>
+        <label>Username: <input type="text" id="challonge-username" required></label>
+        <label>API Key: <input type="password" id="challonge-token" required></label>
+
+        <h2>Bot Settings</h2>
+        <label>Command Prefix: <input type="text" id="bot-prefix" value="!" required></label>
+        <label>TO Role Name: <input type="text" id="bot-to-role" value="Organizer" required></label>
+
+        <div class="buttons">
+          <button type="submit">Save & Start Bot</button>
+          <button type="button" id="load-config">Load Config</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="dashboard-screen" class="screen hidden">
+      <header>
+        <h1>MLBB Bot</h1>
+        <div class="status-indicator">
+          <span id="status-dot"></span>
+          <span id="status-text">Stopped</span>
+          <button id="settings-btn">⚙</button>
+          <button id="stop-btn">⏹</button>
+        </div>
+      </header>
+
+      <section id="network-info">
+        <h3>Network Access</h3>
+        <div class="url-row">
+          <span>Local:</span>
+          <code id="local-url">http://localhost:3000</code>
+          <button class="copy-btn" data-target="local-url">📋 Copy</button>
+        </div>
+        <div class="url-row">
+          <span>Network:</span>
+          <code id="network-url">http://192.168.1.105:3000</code>
+          <button class="copy-btn" data-target="network-url">📋 Copy</button>
+        </div>
+        <p>Other users on your network can use the Network URL</p>
+      </section>
+
+      <section id="logs">
+        <h3>Live Logs <label><input type="checkbox" id="auto-scroll" checked> Auto-scroll</label></h3>
+        <div id="log-container"></div>
+      </section>
+
+      <div class="buttons">
+        <button id="web-interface-btn">🌐 Web Interface</button>
+        <button id="export-logs-btn">📋 Export Logs</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

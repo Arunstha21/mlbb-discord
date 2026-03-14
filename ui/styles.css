@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.screen {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Config Screen */
+#config-screen {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#config-screen h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #89b4fa;
+}
+
+#config-screen h2 {
+  margin: 20px 0 10px;
+  color: #89b4fa;
+  font-size: 1.1em;
+}
+
+#config-screen label {
+  display: block;
+  margin: 10px 0;
+}
+
+#config-screen input[type="text"],
+#config-screen input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  background: #313244;
+  border: 1px solid #45475a;
+  color: #cdd6f4;
+  border-radius: 6px;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  background: #89b4fa;
+  color: #1e1e2e;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #b4befe;
+}
+
+/* Dashboard */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #45475a;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f38ba8;
+}
+
+#status-dot.running {
+  background: #a6e3a1;
+}
+
+#network-info {
+  background: #313244;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.url-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.url-row code {
+  flex: 1;
+  background: #1e1e2e;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.copy-btn {
+  padding: 5px 10px;
+  font-size: 0.8em;
+}
+
+#logs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#logs h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#log-container {
+  flex: 1;
+  background: #1e1e2e;
+  border-radius: 8px;
+  padding: 15px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.log-line {
+  margin: 2px 0;
+}
+
+.log-error {
+  color: #f38ba8;
+}
+
+.log-info {
+  color: #89b4fa;
+}
