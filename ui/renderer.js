@@ -35,13 +35,18 @@ function setupIPCHandlers() {
     });
     window.electronAPI.onBotStatus((status) => {
         updateStatus(status);
+        // Only show dashboard when bot is actually running
+        if (status.running) {
+            showDashboard();
+        }
     });
     window.electronAPI.onBotError((error) => {
         appendLog(`ERROR: ${error}`, true);
+        alert(`Bot error: ${error}`);
     });
     window.electronAPI.onConfigLoaded((config) => {
         populateConfigForm(config);
-        showDashboard();
+        // Don't show dashboard yet - wait for bot status
     });
     window.electronAPI.onPortDetected?.((port) => {
         localUrlElement.textContent = `http://localhost:${port}`;
@@ -111,6 +116,7 @@ function validateFormConfig() {
 }
 function handleConfigSubmit(e) {
     e.preventDefault();
+    const submitBtn = configForm.querySelector('button[type="submit"]');
     const config = {
         version: '1.0.0',
         discord: { token: document.getElementById('discord-token').value },
@@ -132,8 +138,20 @@ function handleConfigSubmit(e) {
         alert('Configuration errors:\n' + errors.map(e => `• ${e.message}`).join('\n'));
         return;
     }
+    // Show loading state
+    if (submitBtn) {
+        submitBtn.textContent = 'Starting...';
+        submitBtn.disabled = true;
+    }
+    // Don't show dashboard yet - wait for bot-status event
     window.electronAPI.startBot(config);
-    showDashboard();
+    // Reset button after a timeout (in case bot fails to start)
+    setTimeout(() => {
+        if (submitBtn && submitBtn.textContent === 'Starting...') {
+            submitBtn.textContent = 'Save & Start Bot';
+            submitBtn.disabled = false;
+        }
+    }, 5000);
 }
 function loadConfigFromFile() {
     // Config is auto-loaded by Electron, this button is for manual reload
@@ -150,6 +168,12 @@ function updateStatus(status) {
     if (status.running) {
         statusDot.classList.add('running');
         statusText.textContent = 'Running';
+        // Reset submit button if it was in loading state
+        const submitBtn = document.querySelector('#config-form button[type="submit"]');
+        if (submitBtn && submitBtn.disabled) {
+            submitBtn.textContent = 'Save & Start Bot';
+            submitBtn.disabled = false;
+        }
     }
     else {
         statusDot.classList.remove('running');
