@@ -21,7 +21,8 @@ function createWindow(): void {
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, '../ui/index.html'));
+  // Load from ui folder (relative to project root, not dist/electron)
+  mainWindow.loadFile(path.join(__dirname, '../../ui/index.html'));
 
   // Check for existing config and notify renderer
   const existingConfig = loadConfig();
@@ -183,12 +184,6 @@ ipcMain.on('open-web-interface', () => {
 // App lifecycle
 app.whenReady().then(() => {
   createWindow();
-  ipcMain.handle('get-network-ip', () => {
-    return {
-      local: 'localhost',
-      network: getNetworkIP()
-    };
-  });
 });
 
 app.on('window-all-closed', () => {
