@@ -21,12 +21,15 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 			fs.mkdirSync(dbDir, { recursive: true });
 		}
 
-		// Use location for sql.js to persist database
-		const useLocation = fs.existsSync(dbPath) ? dbPath : undefined;
+		// Create empty database file if it doesn't exist
+		if (!fs.existsSync(dbPath)) {
+			fs.writeFileSync(dbPath, Buffer.from([]));
+			logger.info(`Created new database file at ${dbPath}`);
+		}
 
 		await createConnection({
 			type: "sqljs",
-			location: useLocation,
+			location: dbPath,
 			autoSave: true,
 			autoSaveCallback: (data: Uint8Array) => {
 				fs.writeFileSync(dbPath, Buffer.from(data));
@@ -42,7 +45,7 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 			logger: "debug",
 			synchronize: true
 		});
-		logger.info(`Connected to SQLite via sql.js TypeORM`);
+		logger.info(`Connected to SQLite via sql.js TypeORM at ${dbPath}`);
 	} else {
 		await createConnection({
 			type: "postgres",

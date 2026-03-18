@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "discord": {
+    "token": "YOUR_DISCORD_TOKEN_HERE"
+  },
+  "challonge": {
+    "username": "YOUR_CHALLONGE_USERNAME",
+    "token": "YOUR_CHALLONGE_TOKEN"
+  },
+  "bot": {
+    "defaultPrefix": "!",
+    "defaultToRole": "Organizer",
+    "participantRole": "Participant"
+  },
+  "database": {
+    "type": "sqlite",
+    "path": "./data/dot.db"
+  },
+  "web": {
+    "port": 3000,
+    "autoIncrement": true
+  },
+  "logging": {
+    "level": "info"
+  }
+}
