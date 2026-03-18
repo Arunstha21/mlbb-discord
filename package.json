@@ -59,7 +59,7 @@
 	"author": "Arun Shrestha",
 	"license": "AGPL-3.0-or-later",
 	"engines": {
-		"node": ">=20",
+		"node": ">=24",
 		"npm": ">=10"
 	},
 	"dependencies": {
