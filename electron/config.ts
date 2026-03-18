@@ -77,6 +77,7 @@ export function configToEnv(config: BotConfig): NodeJS.ProcessEnv {
     POSTGRESQL_URL: config.database.url || '',
     WEB_PORT: config.web.port.toString(),
     DOT_LOGGER_WEBHOOK: config.logging.webhook || '',
+    DEBUG: process.env.DEBUG || 'dot:*',
     NODE_ENV: 'production'
   };
 }

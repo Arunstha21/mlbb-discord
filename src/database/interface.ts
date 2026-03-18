@@ -58,3 +58,6 @@ export interface SynchroniseTournament {
 	format?: TournamentFormat;
 	participantLimit?: number;
 }
+
+// Force this file to be compiled to JavaScript
+export const __DATABASE_INTERFACE_VERSION__ = '1.0.0';

@@ -319,6 +319,8 @@
 	</div>
 </div>
 
+
+
 <style>
 .tournament-detail-page {
 	max-width: 1200px;
@@ -897,6 +899,8 @@ function escapeHtml(text) {
 	return div.innerHTML;
 }
 
+
+
 // ============================================
 // CSV Import Functions
 // ============================================
@@ -1215,16 +1219,20 @@ async function saveParticipant(event) {
 }
 
 async function deleteParticipant(id) {
-	if (!confirm('Are you sure you want to delete this participant?')) return;
-
-	try {
-		await Dot.API.delete(`/api/tournaments/${tournamentId}/participants/${id}`);
-		Dot.Toast.success('Participant deleted successfully');
-		await loadTournamentData();
-	} catch (error) {
-		console.error('Failed to delete participant:', error);
-		Dot.Toast.error('Failed to delete participant');
-	}
+	Dot.Modal.confirm(
+		'Delete Participant',
+		'Are you sure you want to delete this participant?',
+		async () => {
+			try {
+				await Dot.API.delete(`/api/tournaments/${tournamentId}/participants/${id}`);
+				Dot.Toast.success('Participant deleted successfully');
+				await loadTournamentData();
+			} catch (error) {
+				console.error('Failed to delete participant:', error);
+				Dot.Toast.error('Failed to delete participant');
+			}
+		}
+	);
 }
 
 // ============================================
@@ -1305,16 +1313,20 @@ async function saveSchedule(event) {
 }
 
 async function deleteSchedule(id) {
-	if (!confirm('Are you sure you want to delete this schedule?')) return;
-
-	try {
-		await Dot.API.delete(`/api/tournaments/${tournamentId}/schedules/${id}`);
-		Dot.Toast.success('Schedule deleted successfully');
-		await loadTournamentData();
-	} catch (error) {
-		console.error('Failed to delete schedule:', error);
-		Dot.Toast.error('Failed to delete schedule');
-	}
+	Dot.Modal.confirm(
+		'Delete Schedule',
+		'Are you sure you want to delete this schedule?',
+		async () => {
+			try {
+				await Dot.API.delete(`/api/tournaments/${tournamentId}/schedules/${id}`);
+				Dot.Toast.success('Schedule deleted successfully');
+				await loadTournamentData();
+			} catch (error) {
+				console.error('Failed to delete schedule:', error);
+				Dot.Toast.error('Failed to delete schedule');
+			}
+		}
+	);
 }
 
 // Update render functions to include action buttons

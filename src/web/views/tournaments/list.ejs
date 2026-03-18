@@ -68,6 +68,8 @@
 	</div>
 </div>
 
+
+
 <style>
 .tournaments-page {
 	max-width: 1200px;
@@ -347,17 +349,19 @@ async function syncTournament(id, name) {
 
 // Delete tournament
 async function deleteTournament(id) {
-	if (!confirm(`Are you sure you want to delete tournament "${id}"?`)) {
-		return;
-	}
-
-	try {
-		await Dot.API.delete(`/api/tournaments/${id}`);
-		Dot.Toast.success('Tournament deleted');
-		loadTournaments();
-	} catch (error) {
-		// Error already shown by API wrapper
-	}
+	Dot.Modal.confirm(
+		'Delete Tournament',
+		`Are you sure you want to delete tournament "${id}"?`,
+		async () => {
+			try {
+				await Dot.API.delete(`/api/tournaments/${id}`);
+				Dot.Toast.success('Tournament deleted');
+				loadTournaments();
+			} catch (error) {
+				// Error already shown by API wrapper
+			}
+		}
+	);
 }
 
 // Utility functions

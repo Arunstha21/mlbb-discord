@@ -137,6 +137,64 @@ const Modal = {
 			if (overlay) overlay.remove();
 		}
 	},
+
+	confirm(title, message, onConfirm, onCancel = null) {
+		const content = `
+			<div class="modal" style="max-width: 400px;">
+				<div class="modal-header">
+					<h3 class="modal-title">${Utils.escapeHtml(title)}</h3>
+					<button class="modal-close js-confirm-close">&times;</button>
+				</div>
+				<div class="modal-body">
+					<p style="color: var(--text-primary); margin: 0; font-size: 14.5px;">${Utils.escapeHtml(message)}</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary js-confirm-cancel">Cancel</button>
+					<button class="btn btn-danger js-confirm-ok">Confirm</button>
+				</div>
+			</div>
+		`;
+		const overlay = this.open(content);
+		
+		const handleCancel = () => {
+			this.close(overlay);
+			if (onCancel) onCancel();
+		};
+
+		overlay.querySelector('.js-confirm-close').addEventListener('click', handleCancel);
+		overlay.querySelector('.js-confirm-cancel').addEventListener('click', handleCancel);
+		
+		overlay.querySelector('.js-confirm-ok').addEventListener('click', () => {
+			this.close(overlay);
+			if (onConfirm) onConfirm();
+		});
+	},
+
+	alert(title, message, onOk = null) {
+		const content = `
+			<div class="modal" style="max-width: 400px;">
+				<div class="modal-header">
+					<h3 class="modal-title">${Utils.escapeHtml(title)}</h3>
+					<button class="modal-close js-alert-close">&times;</button>
+				</div>
+				<div class="modal-body">
+					<p style="color: var(--text-primary); margin: 0; font-size: 14.5px;">${Utils.escapeHtml(message)}</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary js-alert-ok">OK</button>
+				</div>
+			</div>
+		`;
+		const overlay = this.open(content);
+		
+		const handleClose = () => {
+			this.close(overlay);
+			if (onOk) onOk();
+		};
+
+		overlay.querySelector('.js-alert-close').addEventListener('click', handleClose);
+		overlay.querySelector('.js-alert-ok').addEventListener('click', handleClose);
+	}
 };
 
 // Utility functions
@@ -176,6 +234,13 @@ const Utils = {
 		if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
 		return `${Math.floor(seconds / 86400)}d ago`;
 	},
+
+	escapeHtml(text) {
+		if (!text) return '';
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
 };
 
 // Initialize app

@@ -9,7 +9,7 @@
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
 		"lint": "eslint src",
-		"build": "tsc",
+		"build": "tsc && rm -rf dist/web/views dist/web/public && cp -r src/web/views dist/web/views && (cp -r src/web/public dist/web/public 2>/dev/null || true)",
 		"electron:dev": "electron ./dist/electron/main.js",
 		"electron:build": "tsc -p electron/tsconfig.json && tsc -p ui/tsconfig.json",
 		"build:win": "npm run build && npm run electron:build && electron-builder --win",
@@ -77,7 +77,7 @@
 		"@types/express-ejs-layouts": "^2.5.4",
 		"@types/make-fetch-happen": "^10.0.4",
 		"@types/sql.js": "^1.4.9",
-		"electron": "^33.4.11",
+		"electron": "^35.0.0",
 		"electron-builder": "^25.1.8",
 		"mocha": "^11.7.5",
 		"nodemon": "^3.1.14"

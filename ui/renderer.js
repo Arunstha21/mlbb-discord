@@ -8,6 +8,12 @@ const logContainer = document.getElementById('log-container');
 const localUrlElement = document.getElementById('local-url');
 const networkUrlElement = document.getElementById('network-url');
 const autoScrollCheckbox = document.getElementById('auto-scroll');
+const webInterfaceScreen = document.getElementById('web-interface-screen');
+const webIframe = document.getElementById('web-iframe');
+const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+const backFromConfigBtn = document.getElementById('back-from-config-btn');
+const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
 let autoScroll = true;
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,10 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     configForm.addEventListener('submit', handleConfigSubmit);
     document.getElementById('load-config')?.addEventListener('click', loadConfigFromFile);
-    document.getElementById('stop-btn')?.addEventListener('click', handleStopBot);
+    startBtn.addEventListener('click', handleStartBot);
+    stopBtn.addEventListener('click', handleStopBot);
     document.getElementById('settings-btn')?.addEventListener('click', () => showConfigScreen());
+    backFromConfigBtn.addEventListener('click', showDashboard);
     document.getElementById('web-interface-btn')?.addEventListener('click', openWebInterface);
     document.getElementById('export-logs-btn')?.addEventListener('click', exportLogs);
+    backToDashboardBtn.addEventListener('click', hideWebInterface);
     autoScrollCheckbox?.addEventListener('change', (e) => {
         autoScroll = e.target.checked;
     });
@@ -38,11 +47,26 @@ function setupIPCHandlers() {
         // Only show dashboard when bot is actually running
         if (status.running) {
             showDashboard();
+            // Clear stored config on successful start
+            try {
+                localStorage.removeItem('mlbb-bot-config');
+            }
+            catch (err) {
+                console.warn('Could not clear config from localStorage:', err);
+            }
         }
     });
     window.electronAPI.onBotError((error) => {
         appendLog(`ERROR: ${error}`, true);
-        alert(`Bot error: ${error}`);
+        alert(`Bot error: ${error}\n\nYour configuration has been saved. Please check the logs and try again.`);
+        // Restore form values from localStorage
+        restoreFormFromStorage();
+        // Reset submit button depending on status
+        const submitBtn = configForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = statusText.textContent === 'Running' ? 'Save & Restart Bot' : 'Save & Start Bot';
+            submitBtn.disabled = false;
+        }
     });
     window.electronAPI.onConfigLoaded((config) => {
         populateConfigForm(config);
@@ -68,10 +92,24 @@ async function loadNetworkInfo() {
 function showConfigScreen() {
     configScreen.classList.remove('hidden');
     dashboardScreen.classList.add('hidden');
+    webInterfaceScreen.classList.add('hidden');
+    const submitBtn = configForm.querySelector('button[type="submit"]');
+    const isRunning = statusText.textContent === 'Running';
+    if (isRunning) {
+        backFromConfigBtn.classList.remove('hidden');
+        if (submitBtn)
+            submitBtn.textContent = 'Save & Restart Bot';
+    }
+    else {
+        backFromConfigBtn.classList.add('hidden');
+        if (submitBtn)
+            submitBtn.textContent = 'Save & Start Bot';
+    }
 }
 function showDashboard() {
     configScreen.classList.add('hidden');
     dashboardScreen.classList.remove('hidden');
+    webInterfaceScreen.classList.add('hidden');
 }
 function populateConfigForm(config) {
     document.getElementById('discord-token').value = config.discord.token;
@@ -79,6 +117,18 @@ function populateConfigForm(config) {
     document.getElementById('challonge-token').value = config.challonge.token;
     document.getElementById('bot-prefix').value = config.bot.defaultPrefix;
     document.getElementById('bot-to-role').value = config.bot.defaultToRole;
+}
+function restoreFormFromStorage() {
+    try {
+        const stored = localStorage.getItem('mlbb-bot-config');
+        if (stored) {
+            const config = JSON.parse(stored);
+            populateConfigForm(config);
+        }
+    }
+    catch (err) {
+        console.warn('Could not restore config from localStorage:', err);
+    }
 }
 function validateFormConfig() {
     const discordToken = document.getElementById('discord-token').value;
@@ -138,20 +188,26 @@ function handleConfigSubmit(e) {
         alert('Configuration errors:\n' + errors.map(e => `• ${e.message}`).join('\n'));
         return;
     }
+    // Store form values in localStorage for recovery on error
+    try {
+        localStorage.setItem('mlbb-bot-config', JSON.stringify(config));
+    }
+    catch (err) {
+        console.warn('Could not store config in localStorage:', err);
+    }
     // Show loading state
     if (submitBtn) {
-        submitBtn.textContent = 'Starting...';
+        submitBtn.textContent = statusText.textContent === 'Running' ? 'Restarting...' : 'Starting...';
         submitBtn.disabled = true;
     }
     // Don't show dashboard yet - wait for bot-status event
     window.electronAPI.startBot(config);
-    // Reset button after a timeout (in case bot fails to start)
-    setTimeout(() => {
-        if (submitBtn && submitBtn.textContent === 'Starting...') {
-            submitBtn.textContent = 'Save & Start Bot';
-            submitBtn.disabled = false;
-        }
-    }, 5000);
+}
+function handleStartBot() {
+    // Use config from form to start bot
+    const submitBtn = configForm.querySelector('button[type="submit"]');
+    if (submitBtn)
+        submitBtn.click();
 }
 function loadConfigFromFile() {
     // Config is auto-loaded by Electron, this button is for manual reload
@@ -160,24 +216,32 @@ function loadConfigFromFile() {
 function handleStopBot() {
     if (confirm('Are you sure you want to stop the bot?')) {
         window.electronAPI.stopBot();
-        statusDot.classList.remove('running');
-        statusText.textContent = 'Stopped';
+        // Status update will be handled by onBotStatus listener
     }
 }
 function updateStatus(status) {
     if (status.running) {
         statusDot.classList.add('running');
         statusText.textContent = 'Running';
+        startBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
         // Reset submit button if it was in loading state
         const submitBtn = document.querySelector('#config-form button[type="submit"]');
         if (submitBtn && submitBtn.disabled) {
-            submitBtn.textContent = 'Save & Start Bot';
+            submitBtn.textContent = 'Save & Restart Bot';
             submitBtn.disabled = false;
         }
     }
     else {
         statusDot.classList.remove('running');
         statusText.textContent = 'Stopped';
+        startBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        // If we're on config screen, also reset the submit button text
+        const submitBtn = document.querySelector('#config-form button[type="submit"]');
+        if (submitBtn && !submitBtn.disabled) {
+            submitBtn.textContent = 'Save & Start Bot';
+        }
     }
 }
 function appendLog(log, isError = false) {
@@ -199,7 +263,16 @@ function appendLog(log, isError = false) {
     });
 }
 function openWebInterface() {
-    window.electronAPI.openWebInterface();
+    dashboardScreen.classList.add('hidden');
+    webInterfaceScreen.classList.remove('hidden');
+    // Get port from local url element
+    const localUrl = localUrlElement.textContent || 'http://localhost:3000';
+    webIframe.src = localUrl;
+}
+function hideWebInterface() {
+    webInterfaceScreen.classList.add('hidden');
+    dashboardScreen.classList.remove('hidden');
+    webIframe.src = 'about:blank'; // Clear iframe to save resources
 }
 function exportLogs() {
     const logs = logContainer.innerText;

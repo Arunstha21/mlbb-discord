@@ -3,7 +3,13 @@
   "compilerOptions": {
     "rootDir": "./",
     "outDir": "../dist/electron",
-    "types": ["node"]
+    "types": ["node"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true
   },
   "include": ["*.ts"]
 }

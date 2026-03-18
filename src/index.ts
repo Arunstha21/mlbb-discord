@@ -58,17 +58,19 @@ const logger = getLogger("index");
 		timeWizard
 	});
 
-	bot.on("ready", async () => {
+	bot.on("clientReady", async () => {
 		logger.notify(`Logged in as ${bot.user?.tag} - ${bot.user?.id}`);
 		bot.user?.setActivity("🕯️ Keeping the lights on", { type: ActivityType.Custom });
 		// Set bot client for web server
 		setBotClient(bot);
 	});
-	bot.once("ready", async () => {
+	bot.once("clientReady", async () => {
 		await timeWizard.load();
 	});
 	bot.login().catch(logger.error);
 	process.once("SIGTERM", () => {
 		bot.destroy();
+		logger.notify("Bot destroyed upon receiving SIGTERM. Exiting process.");
+		process.exit(0);
 	});
 })();
