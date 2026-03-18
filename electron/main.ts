@@ -98,7 +98,7 @@ async function startBot(config: BotConfig): Promise<void> {
   const nodeExec = require('fs').existsSync(nodeBin) ? nodeBin : 'node';
 
   // Spawn bot process
-  botProcess = spawn(nodeExec, ['dist/index.js'], {
+  botProcess = spawn(nodeExec, [path.join(__dirname, '../index.js')], {
     env: { ...process.env, ...env },
     stdio: 'pipe',
     windowsHide: true
