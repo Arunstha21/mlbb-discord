@@ -12,10 +12,9 @@
 		"build": "shx rm -f tsconfig.tsbuildinfo && tsc && shx rm -rf dist/web/views dist/web/public && shx mkdir -p dist/web && shx cp -r src/web/views dist/web/views && (shx cp -r src/web/public dist/web/public 2>/dev/null || true)",
 		"electron:dev": "electron ./dist/electron/main.js",
 		"electron:build": "tsc -p electron/tsconfig.json && tsc -p ui/tsconfig.json",
-		"build:win": "npm run build && npm run electron:build && electron-builder --win && npm run postbuild:fix",
-		"build:mac": "npm run build && npm run electron:build && electron-builder --mac && npm run postbuild:fix",
-		"build:all": "npm run build && npm run electron:build && electron-builder --win --mac && npm run postbuild:fix",
-		"postbuild:fix": "shx mkdir -p dist/installers/mac-arm64/MLBB\\ Tournament\\ Bot.app/Contents/Resources/app/node_modules && shx cp -r node_modules/call-bind-apply-helpers dist/installers/mac-arm64/MLBB\\ Tournament\\ Bot.app/Contents/Resources/app/node_modules/ 2>/dev/null || shx true && shx mkdir -p dist/installers/win-unpacked/resources/app/node_modules && shx cp -r node_modules/call-bind-apply-helpers dist/installers/win-unpacked/resources/app/node_modules/ 2>/dev/null || shx true"
+		"build:win": "npm run build && npm run electron:build && electron-builder --win",
+		"build:mac": "npm run build && npm run electron:build && electron-builder --mac",
+		"build:all": "npm run build && npm run electron:build && electron-builder --win --mac"
 	},
 	"main": "dist/electron/main.js",
 	"build": {
@@ -31,6 +30,12 @@
 			"!dist/installers/**",
 			"ui/**/*",
 			"data/**/*"
+		],
+		"extraFiles": [
+			{
+				"from": "node_modules/call-bind-apply-helpers",
+				"to": "node_modules/call-bind-apply-helpers"
+			}
 		],
 		"npmRebuild": false,
 		"includeSubNodeModules": true,
