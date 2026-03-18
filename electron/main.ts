@@ -211,6 +211,17 @@ function unregisterIpcHandlers(): void {
 
 // App lifecycle
 app.whenReady().then(() => {
+  // Set up cache directories to avoid Windows permission issues
+  const userDataPath = app.getPath('userData');
+  const cachePath = path.join(userDataPath, 'Cache');
+
+  // Configure Chromium to use our cache directory
+  app.commandLine.appendSwitch('disk-cache-dir', cachePath);
+  app.commandLine.appendSwitch('disk-cache-size', '104857600'); // 100MB
+
+  // Disable GPU cache to prevent errors (optional, can help on Windows)
+  app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+
   registerIpcHandlers();
   createWindow();
 });
