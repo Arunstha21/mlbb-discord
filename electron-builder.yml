@@ -9,6 +9,13 @@ files:
   - "!dist/installers/**"
   - ui/**/*
   - data/**/*
+extraResources:
+  - from: node_modules/call-bind-apply-helpers
+    to: node_modules/call-bind-apply-helpers
+  - from: node_modules/function-bind
+    to: node_modules/function-bind
+  - from: node_modules/es-errors
+    to: node_modules/es-errors
 npmRebuild: false
 includeSubNodeModules: true
 asar: false
