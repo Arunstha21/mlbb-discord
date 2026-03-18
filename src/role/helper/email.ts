@@ -1,7 +1,35 @@
 import { getLogger } from "../../util/logger";
-import credentials from "../../../credentials.json";
 
 const logger = getLogger("email");
+
+interface Credentials {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    tokenUri: string;
+}
+
+function getCredentials(): Credentials | null {
+    // Try environment variables first (for CI/CD)
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN) {
+        return {
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+            tokenUri: process.env.GOOGLE_TOKEN_URI || 'https://oauth2.googleapis.com/token',
+        };
+    }
+
+    // Fallback to credentials.json for local development
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        return require('../../../credentials.json');
+    } catch {
+        return null;
+    }
+}
+
+const credentials = getCredentials();
 
 let access_token: string = '';
 let expiry: Date = new Date(Date.now() - 120 * 1000);
@@ -13,6 +41,11 @@ function isTokenExpired(): boolean {
 
 async function refreshAccessToken(): Promise<void> {
     if (!isTokenExpired()) return;
+
+    if (!credentials) {
+        logger.error('Google credentials not configured');
+        return;
+    }
 
     logger.info('Google API access token expired. Refreshing token.');
 
@@ -45,6 +78,11 @@ async function refreshAccessToken(): Promise<void> {
 }
 
 export async function sendEmail(to: string, otp: number): Promise<void> {
+    if (!credentials) {
+        logger.error('Cannot send email: Google credentials not configured');
+        return;
+    }
+
     await refreshAccessToken();
 
     const sender = 'leagueops@nodwin.com';

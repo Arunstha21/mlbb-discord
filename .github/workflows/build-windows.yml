@@ -38,6 +38,11 @@ jobs:
         run: npm run build:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Google OAuth credentials for email functionality
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_TOKEN_URI: ${{ secrets.GOOGLE_TOKEN_URI }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
