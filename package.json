@@ -9,12 +9,13 @@
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
 		"lint": "eslint src",
-		"build": "tsc && rm -rf dist/web/views dist/web/public && cp -r src/web/views dist/web/views && (cp -r src/web/public dist/web/public 2>/dev/null || true)",
+		"build": "rm -f tsconfig.tsbuildinfo && tsc && rm -rf dist/web/views dist/web/public && mkdir -p dist/web && cp -r src/web/views dist/web/views && (cp -r src/web/public dist/web/public 2>/dev/null || true)",
 		"electron:dev": "electron ./dist/electron/main.js",
 		"electron:build": "tsc -p electron/tsconfig.json && tsc -p ui/tsconfig.json",
-		"build:win": "npm run build && npm run electron:build && electron-builder --win",
-		"build:mac": "npm run build && npm run electron:build && electron-builder --mac",
-		"build:all": "npm run build && npm run electron:build && electron-builder --win --mac"
+		"build:win": "npm run build && npm run electron:build && electron-builder --win && npm run postbuild:fix",
+		"build:mac": "npm run build && npm run electron:build && electron-builder --mac && npm run postbuild:fix",
+		"build:all": "npm run build && npm run electron:build && electron-builder --win --mac && npm run postbuild:fix",
+		"postbuild:fix": "mkdir -p dist/installers/mac-arm64/MLBB\\ Tournament\\ Bot.app/Contents/Resources/app/node_modules && cp -r node_modules/call-bind-apply-helpers dist/installers/mac-arm64/MLBB\\ Tournament\\ Bot.app/Contents/Resources/app/node_modules/ 2>/dev/null || true && mkdir -p dist/installers/win-unpacked/resources/app/node_modules && cp -r node_modules/call-bind-apply-helpers dist/installers/win-unpacked/resources/app/node_modules/ 2>/dev/null || true"
 	},
 	"main": "dist/electron/main.js",
 	"build": {
@@ -26,10 +27,14 @@
 		},
 		"files": [
 			"dist/electron/**/*",
-			"dist/src/**/*",
+			"dist/**/*",
+			"!dist/installers/**",
 			"ui/**/*",
 			"data/**/*"
 		],
+		"npmRebuild": false,
+		"includeSubNodeModules": true,
+		"asar": false,
 		"win": {
 			"target": "nsis",
 			"icon": "assets/icon.ico"
@@ -55,6 +60,7 @@
 	"dependencies": {
 		"@fast-csv/format": "^5.0.5",
 		"async-mutex": "^0.5.0",
+		"call-bind-apply-helpers": "^1.0.2",
 		"debug": "^4.4.3",
 		"discord.js": "^14.25.1",
 		"dotenv": "^17.3.1",

@@ -1,12 +1,16 @@
 import * as path from 'path';
-import { spawn, ChildProcess } from 'child_process';
+import * as fs from 'fs';
+import { spawn, execSync, ChildProcess } from 'child_process';
 import * as os from 'os';
-import { app, BrowserWindow, ipcMain, IpcMainInvokeEvent } from 'electron';
+import * as Electron from 'electron';
+import type { BrowserWindow as BrowserWindowType } from 'electron';
 import { loadConfig, saveConfig, configToEnv, BotConfig, BotStatus } from './config';
 import { findAvailablePort } from './port-detector';
 
-let mainWindow: BrowserWindow | null = null;
-let webWindow: BrowserWindow | null = null;
+const { app, BrowserWindow, ipcMain } = Electron;
+
+let mainWindow: BrowserWindowType | null = null;
+let webWindow: BrowserWindowType | null = null;
 let botProcess: ChildProcess | null = null;
 let currentConfig: BotConfig | null = null;
 
@@ -60,6 +64,64 @@ function getNetworkIP(): string {
   return 'localhost';
 }
 
+function findNodeBinary(): string | null {
+  // 1. Try the Electron companion node binary (works in dev mode)
+  const electronNodeBin = process.execPath.replace(/electron/i, 'node');
+  if (electronNodeBin !== process.execPath && fs.existsSync(electronNodeBin)) {
+    return electronNodeBin;
+  }
+
+  // 2. Check common system paths (macOS GUI apps don't inherit shell PATH)
+  const commonPaths = [
+    '/usr/local/bin/node',
+    '/opt/homebrew/bin/node',           // Apple Silicon Homebrew
+    '/usr/bin/node',
+    path.join(os.homedir(), '.nvm/current/bin/node'),  // nvm
+    path.join(os.homedir(), '.local/share/fnm/aliases/default/bin/node'), // fnm
+  ];
+
+  // Also check nvm versions directory for any installed version
+  const nvmDir = path.join(os.homedir(), '.nvm/versions/node');
+  if (fs.existsSync(nvmDir)) {
+    try {
+      const versions = fs.readdirSync(nvmDir).sort().reverse();
+      for (const ver of versions) {
+        commonPaths.push(path.join(nvmDir, ver, 'bin/node'));
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+
+  for (const nodePath of commonPaths) {
+    if (fs.existsSync(nodePath)) {
+      console.log('[DEBUG] Found node at:', nodePath);
+      return nodePath;
+    }
+  }
+
+  // 3. Try 'which node' as a last resort
+  try {
+    const whichResult = execSync('which node', {
+      encoding: 'utf-8',
+      env: {
+        ...process.env,
+        PATH: `${process.env.PATH || ''}:/usr/local/bin:/opt/homebrew/bin:/usr/bin`
+      }
+    }).trim();
+    if (whichResult && fs.existsSync(whichResult)) {
+      console.log('[DEBUG] Found node via which:', whichResult);
+      return whichResult;
+    }
+  } catch {
+    // 'which' failed — node not found in PATH
+  }
+
+  // 4. Last fallback: bare 'node' — may work if PATH is set
+  console.warn('[WARN] Could not find node binary at known paths, trying bare "node"');
+  return 'node';
+}
+
 async function startBot(config: BotConfig): Promise<void> {
   if (botProcess) {
     stopBot();
@@ -92,16 +154,31 @@ async function startBot(config: BotConfig): Promise<void> {
   env.MLBB_CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
   env.WEB_PORT = port.toString();
 
-  // Use the system node binary, not the Electron binary (process.execPath),
-  // to avoid macOS showing a second Electron app icon in the dock.
-  const nodeBin = process.execPath.replace(/electron/i, 'node');
-  const nodeExec = require('fs').existsSync(nodeBin) ? nodeBin : 'node';
+  // Find a working node binary
+  const nodeExec = findNodeBinary();
+  if (!nodeExec) {
+    const errorMsg = 'Could not find Node.js binary. Please ensure Node.js is installed and accessible.';
+    console.error('[ERROR]', errorMsg);
+    mainWindow.webContents.send('bot-error', errorMsg);
+    return;
+  }
+
+  const botPath = path.join(__dirname, '../index.js');
+
+  const botCwd = path.dirname(botPath);
+
+  console.log('[DEBUG] Spawning bot process:');
+  console.log('[DEBUG]   nodeExec:', nodeExec);
+  console.log('[DEBUG]   botPath:', botPath);
+  console.log('[DEBUG]   botCwd:', botCwd);
+  console.log('[DEBUG]   DEBUG env:', env.DEBUG);
 
   // Spawn bot process
-  botProcess = spawn(nodeExec, [path.join(__dirname, '../index.js')], {
+  botProcess = spawn(nodeExec, [botPath], {
     env: { ...process.env, ...env },
     stdio: 'pipe',
-    windowsHide: true
+    windowsHide: true,
+    cwd: botCwd
   });
 
   botProcess.stdout?.on('data', (data: Buffer) => {
@@ -117,9 +194,13 @@ async function startBot(config: BotConfig): Promise<void> {
   });
 
   botProcess.on('error', (error: Error) => {
+    console.error('[ERROR] Bot process error event:', error);
     mainWindow?.webContents.send('bot-error', error.message);
     console.error('Failed to start bot:', error);
   });
+
+  console.log('[DEBUG] Bot process spawned, PID:', botProcess.pid);
+  console.log('[DEBUG] Waiting for stdout/stderr...');
 
   botProcess.on('exit', (code: number | null, signal: string | null) => {
     const status: BotStatus = {

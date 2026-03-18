@@ -5,9 +5,13 @@ directories:
   buildResources: assets
 files:
   - dist/electron/**/*
-  - dist/src/**/*
+  - dist/**/*
+  - "!dist/installers/**"
   - ui/**/*
   - data/**/*
+npmRebuild: false
+includeSubNodeModules: true
+asar: false
 win:
   target: nsis
   icon: assets/icon.ico
