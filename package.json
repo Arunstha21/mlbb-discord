@@ -9,7 +9,7 @@
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
 		"lint": "eslint src",
-		"build": "shx rm -f tsconfig.tsbuildinfo && tsc && shx rm -rf dist/web/views dist/web/public && shx mkdir -p dist/web && shx cp -r src/web/views dist/web/views && (shx cp -r src/web/public dist/web/public 2>/dev/null || true)",
+		"build": "shx rm -f tsconfig.tsbuildinfo && tsc && shx rm -rf dist/web/views dist/web/public && shx mkdir -p dist/web && shx cp -r src/web/views dist/web/views && shx cp -r src/web/public dist/web/public",
 		"electron:dev": "electron ./dist/electron/main.js",
 		"electron:build": "tsc -p electron/tsconfig.json && tsc -p ui/tsconfig.json",
 		"build:win": "npm run build && npm run electron:build && electron-builder --win",
