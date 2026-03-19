@@ -31,8 +31,20 @@
 			"ui/**/*",
 			"data/**/*"
 		],
-		"npmRebuild": false,
-		"includeSubNodeModules": true,
+		"extraResources": [
+			{
+				"from": "node_modules",
+				"to": "app/node_modules",
+				"filter": [
+					"call-bind-apply-helpers/**/*",
+					"call-bound/**/*",
+					"es-errors/**/*",
+					"function-bind/**/*",
+					"get-intrinsic/**/*",
+					"hasown/**/*"
+				]
+			}
+		],
 		"asar": false,
 		"win": {
 			"target": "nsis",
