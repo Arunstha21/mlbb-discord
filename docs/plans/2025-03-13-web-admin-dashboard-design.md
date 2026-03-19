@@ -105,7 +105,7 @@ src/
 - Preview parsed data before importing
 - "Register to Challonge" option
 - Handles duplicates (skip or update)
-- Reuses enrollment logic from `dot!enroll`
+- Reuses enrollment logic from `!enroll`
 
 **Individual CRUD:**
 - Manual add form
@@ -120,7 +120,7 @@ src/
 - Expected columns: `match_id`, `scheduled_time`, `timezone` (optional)
 - Preview before importing
 - Updates existing schedules by match_id
-- Reuses schedule parsing from `dot!schedule`
+- Reuses schedule parsing from `!schedule`
 
 **Individual CRUD:**
 - Manual add with match ID lookup
@@ -135,7 +135,7 @@ src/
 - Discord channel dropdown (fetches server channels)
 - Preview: shows matches, enrolled participants, scheduled times
 - Create threads button with progress indicator
-- Reuses round logic from `dot!round`
+- Reuses round logic from `!round`
 
 **Round Status:**
 - List of created threads

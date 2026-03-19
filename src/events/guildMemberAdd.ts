@@ -128,7 +128,7 @@ export function makeHandler(_support: CommandSupport) {
 			const welcomeEmbed = new EmbedBuilder()
 				.setTitle("Welcome to the Tournament Server!")
 				.setDescription(
-					`Hi <@${member.id}>, we couldn't automatically verify you.\n\nPlease use the command \`dot!email <your_email>\` in this channel to verify your identity and get your participant roles. If you need help, a Tournament Organizer will be with you shortly.`
+					`Hi <@${member.id}>, we couldn't automatically verify you.\n\nPlease use the command \`!email <your_email>\` in this channel to verify your identity and get your participant roles. If you need help, a Tournament Organizer will be with you shortly.`
 				)
 				.setColor("#00b0f4");
 

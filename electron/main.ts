@@ -33,6 +33,27 @@ function createWindow(): void {
   // Load from ui folder (relative to project root, not dist/electron)
   mainWindow.loadFile(path.join(__dirname, '../../ui/index.html'));
 
+  // Handle downloads anywhere in the window (including iframes)
+  mainWindow.webContents.session.on('will-download', (event, item, webContents) => {
+    const defaultPath = path.join(app.getPath('downloads'), item.getFilename());
+    
+    item.setSaveDialogOptions({
+      title: 'Save File',
+      defaultPath: defaultPath,
+      buttonLabel: 'Save'
+    });
+
+    item.once('done', (event, state) => {
+      if (state === 'completed') {
+        const savePath = item.getSavePath();
+        console.log('[DEBUG] Download completed:', savePath);
+        Electron.shell.showItemInFolder(savePath);
+      } else {
+        console.log('[DEBUG] Download failed or cancelled:', state);
+      }
+    });
+  });
+
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();

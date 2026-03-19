@@ -26,7 +26,7 @@ const command: CommandDefinition = {
 			await msg.reply(
 				`**${tournament.name}** Status\n` +
 				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**\n\n` +
-				`To change status, use: \`dot!status [id] <new_status>\`\n` +
+				`To change status, use: \`!status [id] <new_status>\`\n` +
 				`Available statuses: \`preparing\`, \`in progress\`, \`complete\``
 			);
 			return;
@@ -90,7 +90,7 @@ const command: CommandDefinition = {
 				`• \`preparing\` - Tournament is being set up\n` +
 				`• \`in progress\` (or \`ipr\`) - Tournament is running\n` +
 				`• \`complete\` - Tournament has finished\n\n` +
-				`Usage: \`dot!status [id] <new_status>\``
+				`Usage: \`!status [id] <new_status>\``
 			);
 			return;
 		}

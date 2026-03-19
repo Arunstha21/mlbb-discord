@@ -93,10 +93,10 @@ const command: CommandDefinition = {
 
 		const embed = new EmbedBuilder()
 			.setTitle("Verification Under Process")
-			.setDescription(`An OTP has been sent to your email. Enter the OTP using the command \`dot!verify\` or resend OTP using \`dot!email\``)
+			.setDescription(`An OTP has been sent to your email. Enter the OTP using the command \`!verify\` or resend OTP using \`!email\``)
 			.addFields([
-				{ name: "To submit OTP", value: "```dot!verify 123456```", inline: false },
-				{ name: "To resend OTP", value: "```dot!email example@abc.com```", inline: false }
+				{ name: "To submit OTP", value: "```!verify 123456```", inline: false },
+				{ name: "To resend OTP", value: "```!email example@abc.com```", inline: false }
 			])
 			.setColor(0xbf40bf);
 

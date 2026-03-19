@@ -37,7 +37,7 @@ and colour of this role will be configurable per server. For now, please do not 
 rename the role, or create another role with the same name &mdash; Dot will lose track of the role and
 recreate it, or worse, identify authorised hosts with the incorrect role.
 
-The default prefix for all Dot commands is `dot!`. For developers, this can be changed by the `DOT_DEFAULT_PREFIX`
+The default prefix for all Dot commands is `!`. For developers, this can be changed by the `DOT_DEFAULT_PREFIX`
 environment variable. In the future, this will also be configurable per server.
 
 - [Commands for tournament hosts](docs/usage-organiser.md)
@@ -93,7 +93,7 @@ It uses Discord.js to talk to Discord and PostgreSQL for persistence.
         DISCORD_TOKEN=
         CHALLONGE_USERNAME=
         CHALLONGE_TOKEN=
-        DOT_DEFAULT_PREFIX=dot!
+        DOT_DEFAULT_PREFIX=!
         DOT_DEFAULT_TO_ROLE=DOT-TO
         ```
 
@@ -106,7 +106,7 @@ It uses Discord.js to talk to Discord and PostgreSQL for persistence.
         DISCORD_TOKEN=
         CHALLONGE_USERNAME=
         CHALLONGE_TOKEN=
-        DOT_DEFAULT_PREFIX=dot!
+        DOT_DEFAULT_PREFIX=!
         DOT_DEFAULT_TO_ROLE=DOT-TO
         ```
 

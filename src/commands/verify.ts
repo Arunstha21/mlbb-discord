@@ -45,14 +45,14 @@ const command: CommandDefinition = {
 		if (guildPlayers.length === 0) {
 			const embed = new EmbedBuilder()
 				.setTitle("Verification Failed")
-				.setDescription("No pending verification found for you. Please use `dot!email <your_email>` first.")
+				.setDescription("No pending verification found for you. Please use `!email <your_email>` first.")
 				.setColor(0xff0000);
 			await msg.reply({ embeds: [embed] });
 			return;
 		}
 
 		// We assume all pending records for this user in this guild have the same OTP,
-		// since dot!email sets it for all of them at once.
+		// since !email sets it for all of them at once.
 		const matchingPlayer = guildPlayers.find(p => p.otp === otp);
 
 		if (!matchingPlayer) {

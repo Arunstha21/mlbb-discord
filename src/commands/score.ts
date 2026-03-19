@@ -17,7 +17,7 @@ const command: CommandDefinition = {
 	optionalArgs: ["id"],
 	executor: async (msg, args, support) => {
 		if (isTournamentOrganizer(msg.member)) {
-			await msg.reply(`You are a Tournament Organizer. Please use the \`dot!forcescore\` command instead of \`dot!score\`.`);
+			await msg.reply(`You are a Tournament Organizer. Please use the \`!forcescore\` command instead of \`!score\`.`);
 			return;
 		}
 

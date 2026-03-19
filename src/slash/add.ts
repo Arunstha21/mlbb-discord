@@ -81,7 +81,7 @@ export class AddCommand extends SlashCommand {
 		const roleNote = participantRole ? `\nParticipant role: **${participantRole.name}**` : "";
 
 		await interaction.editReply({
-			content: `Tournament **${result.customName}** has been added!\n\nChallonge URL: ${result.url}\nChallonge ID: ${result.challongeId}\nHost: <@${result.userId}>${roleNote}\n\nUse \`dot!sync ${result.customName}\` to sync with Challonge and fetch tournament data.`
+			content: `Tournament **${result.customName}** has been added!\n\nChallonge URL: ${result.url}\nChallonge ID: ${result.challongeId}\nHost: <@${result.userId}>${roleNote}\n\nUse \`!sync ${result.customName}\` to sync with Challonge and fetch tournament data.`
 		});
 
 		this.logger.verbose(

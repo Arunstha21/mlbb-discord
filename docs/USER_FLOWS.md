@@ -16,7 +16,7 @@ The bot supports three main user types:
 
 ### 1. Pre-Tournament: Enrollment (Managed by TO)
 
-Players are enrolled by the Tournament Organizer using the `dot!enroll` command. The TO uploads a CSV file containing player information.
+Players are enrolled by the Tournament Organizer using the `!enroll` command. The TO uploads a CSV file containing player information.
 
 **Required CSV columns:**
 - `email` - Player's email address
@@ -33,7 +33,7 @@ Players must verify their identity before participating. There are two paths:
 If your Discord username, display name, or global name matches what the TO enrolled:
 
 ```
-dot!check
+!check-in
 ```
 
 **Flow:**
@@ -48,25 +48,25 @@ dot!check
 If automatic verification fails (username doesn't match enrollment data):
 
 ```
-dot!check
+!check-in
 ```
 
 **Flow:**
 1. Bot creates a private ticket channel named `ticket-{yourusername}`
 2. In the ticket, use:
    ```
-   dot!email your@email.com
+   !email your@email.com
    ```
 3. Bot sends a 6-digit OTP to your email
 4. Use the OTP to verify:
    ```
-   dot!verify 123456
+   !verify 123456
    ```
 5. If successful, receive Participant role
 
 **Important Notes:**
 - Maximum 3 email attempts per player
-- Tickets auto-close via button or `dot!close` command
+- Tickets auto-close via button or `!close` command
 
 ### 3. During Tournament: Playing Matches
 
@@ -81,12 +81,12 @@ When a round starts, the TO creates match threads. You'll be pinged in a thread 
 
 After your match, report the score using:
 ```
-dot!score {tournamentId} {yourScore}-{opponentScore}
+!score {tournamentId} {yourScore}-{opponentScore}
 ```
 
 Example:
 ```
-dot!score mlbb_spring_2024 2-1
+!score mlbb_spring_2024 2-1
 ```
 
 **Score Report Flow:**
@@ -98,7 +98,7 @@ dot!score mlbb_spring_2024 2-1
 6. Auto-approval after 10 minutes if no response
 
 **Important:**
-- TOs use `dot!forcescore` instead of `dot!score`
+- TOs use `!forcescore` instead of `!score`
 - Score format must be `#-#` (e.g., `2-1`, `3-0`)
 - Your score goes first
 
@@ -108,7 +108,7 @@ If automatic and OTP verification both fail, a TO can manually verify a player:
 
 **Text Command:**
 ```
-dot!verify-player @user player@email.com [tournamentId]
+!verify-player @user player@email.com [tournamentId]
 ```
 
 **Slash Command:**
@@ -146,7 +146,7 @@ Once your tournament is created on Challonge, add it to the bot:
 
 **Text Command:**
 ```
-dot!add https://challonge.com/your_tournament your_tournament_id
+!add https://challonge.com/your_tournament your_tournament_id
 ```
 
 **Note:** Arguments are separated by spaces.
@@ -156,7 +156,7 @@ dot!add https://challonge.com/your_tournament your_tournament_id
 After adding, sync with Challonge to fetch tournament details and players:
 
 ```
-dot!sync your_tournament_id
+!sync your_tournament_id
 ```
 
 #### 1.4 Enroll Players
@@ -172,12 +172,12 @@ player3@example.com,Player Three,Team Beta,player3_discord
 
 Enroll players:
 ```
-dot!enroll {tournamentId} {attach CSV file}
+!enroll {tournamentId} {attach CSV file}
 ```
 
 Example:
 ```
-dot!enroll mlbb_spring_2024 [attach players.csv]
+!enroll mlbb_spring_2024 [attach players.csv]
 ```
 
 **What happens:**
@@ -198,12 +198,12 @@ player3@example.com,Player Three,Team Beta,player3_discord
 
 Enroll players:
 ```
-dot!enroll {tournamentId} {attach CSV file}
+!enroll {tournamentId} {attach CSV file}
 ```
 
 Example:
 ```
-dot!enroll mlbb_spring_2024 [attach players.csv]
+!enroll mlbb_spring_2024 [attach players.csv]
 ```
 
 **What happens:**
@@ -216,14 +216,14 @@ dot!enroll mlbb_spring_2024 [attach players.csv]
 To update a specific player's enrollment data without re-uploading the entire CSV:
 
 ```
-dot!update-player {email} {field}:{value} [{field2}:{value2} ...] [tournamentId]
+!update-player {email} {field}:{value} [{field2}:{value2} ...] [tournamentId]
 ```
 
 **Examples:**
 ```
-dot!update-player john@example.com discord:rangotengo
-dot!update-player john@example.com discord:rangotengo team:rango
-dot!update-player john@example.com discord:rangotengo team:rango mlbb_spring_2024
+!update-player john@example.com discord:rangotengo
+!update-player john@example.com discord:rangotengo team:rango
+!update-player john@example.com discord:rangotengo team:rango mlbb_spring_2024
 ```
 
 **Note:** You can update multiple fields in a single command. If you have multiple tournaments on the same server, include the tournament ID at the end.
@@ -241,12 +241,12 @@ dot!update-player john@example.com discord:rangotengo team:rango mlbb_spring_202
 To remove a player from enrollment:
 
 ```
-dot!drop-player {email} [tournamentId]
+!drop-player {email} [tournamentId]
 ```
 
 Example:
 ```
-dot!drop-player john@example.com mlbb_spring_2024
+!drop-player john@example.com mlbb_spring_2024
 ```
 
 **What happens:**
@@ -264,7 +264,7 @@ Set a custom participant role for your tournament (otherwise defaults to `"Parti
 
 **Text Command:**
 ```
-dot!set-participant-role {tournamentId} {@role}
+!set-participant-role {tournamentId} {@role}
 ```
 
 **Or set it when adding the tournament:**
@@ -276,24 +276,24 @@ dot!set-participant-role {tournamentId} {@role}
 
 Add additional hosts to help manage:
 ```
-dot!addhost {tournamentId} {@user}
+!addhost {tournamentId} {@user}
 ```
 
 Example:
 ```
-dot!addhost mlbb_spring_2024 @CoHost
+!addhost mlbb_spring_2024 @CoHost
 ```
 
 Remove hosts:
 ```
-dot!removehost {tournamentId} {@user}
+!removehost {tournamentId} {@user}
 ```
 
 #### 1.10 View Tournament Info
 
 Check tournament details:
 ```
-dot!info {tournamentId}
+!info {tournamentId}
 ```
 
 Displays:
@@ -307,7 +307,7 @@ Displays:
 #### 1.11 List All Tournaments
 
 ```
-dot!list
+!list
 ```
 
 Shows all tournaments you have access to with:
@@ -321,7 +321,7 @@ Shows all tournaments you have access to with:
 To bulk import match schedules:
 
 1. Create a CSV file with columns: `match_id`, `scheduled_time`, `timezone`
-2. Attach the CSV and run: `dot!schedule [tournament_id]`
+2. Attach the CSV and run: `!schedule [tournament_id]`
 3. The command will parse the CSV and store scheduled times locally
 
 **Example CSV:**
@@ -347,12 +347,12 @@ match_id,scheduled_time,timezone
 
 Create match threads for a round:
 ```
-dot!round {tournamentId} {channelId} {roundNumber}
+!round {tournamentId} {channelId} {roundNumber}
 ```
 
 Example:
 ```
-dot!round mlbb_spring_2024 #match-threads 1
+!round mlbb_spring_2024 #match-threads 1
 ```
 
 **Flow:**
@@ -369,16 +369,16 @@ dot!round mlbb_spring_2024 #match-threads 1
 
 #### 2.2 Manage Score Reports
 
-Players submit scores via `dot!score`. As TO, you have additional options:
+Players submit scores via `!score`. As TO, you have additional options:
 
 **Force Submit a Score:**
 ```
-dot!forcescore {tournamentId} {score} {@player}
+!forcescore {tournamentId} {score} {@player}
 ```
 
 Example:
 ```
-dot!forcescore mlbb_spring_2024 2-1 @PlayerOne
+!forcescore mlbb_spring_2024 2-1 @PlayerOne
 ```
 
 This submits the score directly to Challonge, bypassing player approval.
@@ -392,12 +392,12 @@ If `autoPushScores` is false, approved scores go to a review channel. You can:
 #### 2.3 Update Tournament Details
 
 ```
-dot!update {tournamentId} {newName} {newDescription}
+!update {tournamentId} {newName} {newDescription}
 ```
 
 Example:
 ```
-dot!update mlbb_spring_2024 "MLBB Spring Championship 2024" "The biggest tournament yet!"
+!update mlbb_spring_2024 "MLBB Spring Championship 2024" "The biggest tournament yet!"
 ```
 
 Updates both local database and Challonge.
@@ -406,7 +406,7 @@ Updates both local database and Challonge.
 
 If things get out of sync:
 ```
-dot!sync {tournamentId}
+!sync {tournamentId}
 ```
 
 Refreshes local database with latest Challonge data including:
@@ -423,7 +423,7 @@ Tournaments conclude automatically when marked complete on Challonge.
 
 Close verification tickets manually:
 ```
-dot!close
+!close
 ```
 
 Or use the "Close Ticket" button in ticket channels.
@@ -464,7 +464,7 @@ Use `/add tournament` to add a Challonge tournament to the bot:
 - The user who added the tournament becomes a host
 
 **After adding:**
-Use `dot!sync {name}` to fetch and sync all tournament data from Challonge including:
+Use `!sync {name}` to fetch and sync all tournament data from Challonge including:
 - Tournament name and description
 - Player list
 
@@ -476,17 +476,17 @@ Use `dot!sync {name}` to fetch and sync all tournament data from Challonge inclu
 
 ### Common Player Issues
 
-**Issue:** `dot!check` says "You are a Tournament Organizer"
+**Issue:** `!check-in` says "You are a Tournament Organizer"
 - **Solution:** You have the TO role and don't need to verify
 
 **Issue:** "No pending verification found"
-- **Solution:** Run `dot!email` first in your ticket channel
+- **Solution:** Run `!email` first in your ticket channel
 
 **Issue:** "Invalid OTP provided"
 - **Solution:** Check your email for the correct 6-digit code
 
 **Issue:** "No pending verification found"
-- **Solution:** Run `dot!email` first in your ticket channel
+- **Solution:** Run `!email` first in your ticket channel
 
 **Issue:** "Invalid OTP provided"
 - **Solution:** Check your email for the correct 6-digit code
@@ -556,27 +556,27 @@ The bot uses these key config values:
 
 | Command | Role | Args | Description |
 |---------|------|------|-------------|
-| `dot!add` | TO | `<url> <name>` | Add Challonge tournament to bot |
-| `dot!check` | Player | None | Check verification status |
-| `dot!email` | Player | `<address>` | Request OTP via email |
-| `dot!verify` | Player | `<otp>` | Submit OTP for verification |
-| `dot!score` | Player | `<id> <score>` | Report match score |
-| `dot!enroll` | TO | `<id> <csv>` | Upload player CSV |
-| `dot!update-player` | TO | `<email> <field:value> ... [id]` | Update individual player data |
-| `dot!drop-player` | TO | `<email> [id]` | Remove player from enrollment |
-| `dot!sync` | TO | `<id>` | Sync with Challonge |
-| `dot!update` | TO | `<id> <name> <desc>` | Update tournament |
-| `dot!addhost` | TO | `<id> <@user>` | Add tournament host |
-| `dot!removehost` | TO | `<id> <@user>` | Remove host |
-| `dot!list` | TO | None | List tournaments |
-| `dot!info` | All | `<id>` | Show tournament info |
-| `dot!round` | TO | `<id> <channel> <#>` | Start round/create threads |
-| `dot!forcescore` | TO | `<id> <score> <@user>` | Force submit score |
-| `dot!schedule` | TO | `<id> <csv>` | Schedule match times |
-| `dot!close` | TO | None | Close ticket channel |
-| `dot!help` | All | None | Show help message |
-| `dot!verify-player` | TO | `<@user> <email> [id]` | Manually verify a player |
-| `dot!set-participant-role` | TO | `<id> <@role>` | Set participant role for tournament |
+| `!add` | TO | `<url> <name>` | Add Challonge tournament to bot |
+| `!check-in` | Player | None | Check verification status |
+| `!email` | Player | `<address>` | Request OTP via email |
+| `!verify` | Player | `<otp>` | Submit OTP for verification |
+| `!score` | Player | `<id> <score>` | Report match score |
+| `!enroll` | TO | `<id> <csv>` | Upload player CSV |
+| `!update-player` | TO | `<email> <field:value> ... [id]` | Update individual player data |
+| `!drop-player` | TO | `<email> [id]` | Remove player from enrollment |
+| `!sync` | TO | `<id>` | Sync with Challonge |
+| `!update` | TO | `<id> <name> <desc>` | Update tournament |
+| `!addhost` | TO | `<id> <@user>` | Add tournament host |
+| `!removehost` | TO | `<id> <@user>` | Remove host |
+| `!list` | TO | None | List tournaments |
+| `!info` | All | `<id>` | Show tournament info |
+| `!round` | TO | `<id> <channel> <#>` | Start round/create threads |
+| `!forcescore` | TO | `<id> <score> <@user>` | Force submit score |
+| `!schedule` | TO | `<id> <csv>` | Schedule match times |
+| `!close` | TO | None | Close ticket channel |
+| `!help` | All | None | Show help message |
+| `!verify-player` | TO | `<@user> <email> [id]` | Manually verify a player |
+| `!set-participant-role` | TO | `<id> <@role>` | Set participant role for tournament |
 | `/verify-player` | TO | slash | Manually verify a player |
 | `/set-participant-role` | TO | slash | Configure participant role |
 

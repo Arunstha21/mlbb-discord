@@ -12,7 +12,7 @@
 
 ### Help
 
-Explicitly ping Dot (not Discord replies) or send `dot!help` in a channel with Dot
+Explicitly ping Dot (not Discord replies) or send `!help` in a channel with Dot
 or direct messages with Dot to get a link back here to Dot documentation.
 
 This also shows what revision of Dot's code is currently running, which is more
@@ -24,14 +24,14 @@ To participate in a Mobile Legends tournament, you need to verify your email add
 
 **Step 1: Request OTP verification**
 ```
-dot!email your_email@example.com
+!email your_email@example.com
 ```
 Send this command in a server channel with Dot or in direct messages.
 An OTP (One-Time Password) will be sent to your email address.
 
 **Step 2: Submit OTP**
 ```
-dot!verify 123456
+!verify 123456
 ```
 Replace `123456` with the OTP you received in your email.
 
@@ -51,7 +51,7 @@ and count down every 5 seconds. All participants will be pinged when the time li
 
 ### Submitting scores
 ```
-dot!score [id]|score
+!score [id]|score
 ```
 Replace _score_ with the appropriate parameter below.
 

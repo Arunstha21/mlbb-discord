@@ -31,7 +31,7 @@ export class MatchSchedule extends BaseEntity {
 	@Column({ default: false })
 	notified!: boolean;
 
-	/// Discord thread ID for this match (created by dot!round)
+	/// Discord thread ID for this match (created by !round)
 	@Column({ type: "varchar", nullable: true, length: 20 })
 	threadId!: string | null;
 

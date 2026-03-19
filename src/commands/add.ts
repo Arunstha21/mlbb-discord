@@ -15,7 +15,7 @@ const command: CommandDefinition = {
 
 		if (args.length < 2) {
 			await msg.reply(
-				`Missing tournament name. Expected format: dot!add https://challonge.com/xyz name`
+				`Missing tournament name. Expected format: !add https://challonge.com/xyz name`
 			);
 			return;
 		}
@@ -28,7 +28,7 @@ const command: CommandDefinition = {
 			extractChallongeId(url);
 		} catch {
 			await msg.reply(
-				`Invalid Challonge URL. Expected format: dot!add https://challonge.com/xyz name`
+				`Invalid Challonge URL. Expected format: !add https://challonge.com/xyz name`
 			);
 			return;
 		}
@@ -124,7 +124,7 @@ const command: CommandDefinition = {
 					`Challonge URL: ${result.url}\n` +
 					`Challonge ID: ${result.challongeId}\n` +
 					`Host: <@${result.userId}>\n\n` +
-					`⚠️ Auto-sync failed. Use \`dot!sync ${result.customName}\` to sync manually.`
+					`⚠️ Auto-sync failed. Use \`!sync ${result.customName}\` to sync manually.`
 			);
 		}
 	}

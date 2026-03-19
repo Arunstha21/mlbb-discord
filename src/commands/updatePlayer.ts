@@ -57,7 +57,7 @@ const command: CommandDefinition = {
 
 		// Check if any fields were provided
 		if (Object.keys(fieldUpdates).length === 0) {
-			await msg.reply("❌ No fields to update. Use format: `dot!update-player email field:value [field2:value2] [tournamentId]`\n\nExample: `dot!update-player john@example.com discord:rangotengo team:rango`");
+			await msg.reply("❌ No fields to update. Use format: `!update-player email field:value [field2:value2] [tournamentId]`\n\nExample: `!update-player john@example.com discord:rangotengo team:rango`");
 			return;
 		}
 

@@ -15,7 +15,7 @@ import { isTournamentOrganizer, assignParticipantRole, TO_COMMAND_BLOCKED, TICKE
 const logger = getLogger("command:check");
 
 const command: CommandDefinition = {
-	name: "check",
+	name: "check-in",
 	requiredArgs: [],
 	executor: async (msg, _args, support) => {
 		if (isTournamentOrganizer(msg.member)) {
@@ -129,13 +129,13 @@ const command: CommandDefinition = {
 						]
 					}
 				],
-				reason: `Onboarding ticket via dot!check for ${msg.author.tag}`
+				reason: `Onboarding ticket via !check-in for ${msg.author.tag}`
 			});
 
 			const welcomeEmbed = new EmbedBuilder()
 				.setTitle("Verification Missing")
 				.setDescription(
-					`Hi <@${msg.author.id}>, we couldn't automatically verify you based on your username.\n\nPlease use the command \`dot!email <your_email>\` in this channel to verify your identity and get your participant roles. If you need help, a Tournament Organizer will be with you shortly.`
+					`Hi <@${msg.author.id}>, we couldn't automatically verify you based on your username.\n\nPlease use the command \`!email <your_email>\` in this channel to verify your identity and get your participant roles. If you need help, a Tournament Organizer will be with you shortly.`
 				)
 				.setColor("#00b0f4");
 

@@ -257,4 +257,33 @@ router.post("/api/tournaments/:id/participants/import", async (req: Request, res
 	}
 });
 
+// API: Download participant template as CSV
+router.get("/api/tournaments/:id/participants/download-template", async (req: Request, res: Response) => {
+	try {
+		const tournamentId = getIdParam(req.params);
+
+		const tournament = await validateTournament(tournamentId);
+		if (!tournament) {
+			return res.status(404).json({ success: false, error: "Tournament not found" });
+		}
+
+		// Create blank CSV with examples
+		const headers = 'email,name,team,discord';
+		const exampleRows = [
+			'captain1@example.com,John Doe,Team Alpha,johndoe#1234',
+			'captain2@example.com,Jane Smith,Team Beta,janesmith#5678',
+			'captain3@example.com,Bob Wilson,Team Gamma,'
+		];
+		const csvContent = [headers, ...exampleRows].join('\n');
+
+		// Set headers for download
+		res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+		res.setHeader('Content-Disposition', 'attachment; filename="participants-template.csv"');
+		res.send(csvContent);
+	} catch (error) {
+		logger.error("Failed to download participant template:", error);
+		res.status(500).json({ success: false, error: "Failed to download template" });
+	}
+});
+
 export default router;

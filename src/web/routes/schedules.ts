@@ -356,4 +356,75 @@ router.post("/api/tournaments/:id/schedules/import", async (req: Request, res: R
 	}
 });
 
+// API: Download schedule template as CSV
+router.get("/api/tournaments/:id/schedules/download", async (req: Request, res: Response) => {
+	try {
+		const tournamentId = getIdParam(req.params);
+
+		const tournament = await validateTournament(tournamentId);
+		if (!tournament) {
+			return res.status(404).json({ success: false, error: "Tournament not found" });
+		}
+
+		const schedules = await MatchSchedule.find({
+			where: { tournamentId },
+			order: { scheduledTime: "ASC" }
+		});
+
+		// Create CSV content
+		const headers = 'match_id,scheduled_time,timezone,round,teams';
+		const rows = schedules.map(s => {
+			const date = new Date(s.scheduledTime);
+			const formattedTime = date.getFullYear() + '-' +
+				String(date.getMonth() + 1).padStart(2, '0') + '-' +
+				String(date.getDate()).padStart(2, '0') + ' ' +
+				String(date.getHours()).padStart(2, '0') + ':' +
+				String(date.getMinutes()).padStart(2, '0') + ':' +
+				String(date.getSeconds()).padStart(2, '0');
+			const round = s.roundNumber || '';
+			return `${s.matchId},${formattedTime},UTC,${round},`;
+		});
+
+		const csvContent = [headers, ...rows].join('\n');
+
+		// Set headers for download
+		res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+		res.setHeader('Content-Disposition', `attachment; filename="schedules-template-${tournamentId}.csv"`);
+		res.send(csvContent);
+	} catch (error) {
+		logger.error("Failed to download schedule template:", error);
+		res.status(500).json({ success: false, error: "Failed to download template" });
+	}
+});
+
+// API: Download blank schedule template as CSV
+router.get("/api/tournaments/:id/schedules/download-blank", async (req: Request, res: Response) => {
+	try {
+		const tournamentId = getIdParam(req.params);
+
+		const tournament = await validateTournament(tournamentId);
+		if (!tournament) {
+			return res.status(404).json({ success: false, error: "Tournament not found" });
+		}
+
+		// Create blank CSV with examples
+		const headers = 'match_id,scheduled_time,timezone,round,teams';
+		const exampleRows = [
+			'448723392,2026-03-13 18:00:00,IST,1,"Team Alpha vs Team Beta"',
+			'448723393,2026-03-13 19:00:00,IST,1,"Team Gamma vs Team Delta"',
+			'448723394,2026-03-14 14:00:00,IST,2,"Team Alpha vs Team Gamma"',
+			'448723395,2026-03-14 15:00:00,IST,2,"Team Beta vs Team Delta"'
+		];
+		const csvContent = [headers, ...exampleRows].join('\n');
+
+		// Set headers for download
+		res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+		res.setHeader('Content-Disposition', 'attachment; filename="schedules-template.csv"');
+		res.send(csvContent);
+	} catch (error) {
+		logger.error("Failed to download blank schedule template:", error);
+		res.status(500).json({ success: false, error: "Failed to download template" });
+	}
+});
+
 export default router;

@@ -4,7 +4,7 @@
 
 **Goal:** Add `activeRound` tracking to tournaments so newly verified users are only added to match threads for the currently active round.
 
-**Architecture:** Add nullable `activeRound` integer field to `ChallongeTournament` entity. Set it when creating round threads via `dot!round`. Filter `MatchSchedule` queries by `activeRound` when adding verified users to threads.
+**Architecture:** Add nullable `activeRound` integer field to `ChallongeTournament` entity. Set it when creating round threads via `!round`. Filter `MatchSchedule` queries by `activeRound` when adding verified users to threads.
 
 **Tech Stack:** TypeORM, Discord.js, TypeScript
 
@@ -157,20 +157,20 @@ git commit -m "chore: auto-apply activeRound column via TypeORM sync"
 
 **Step 1: Test - User verifies before any round starts**
 
-1. Start tournament, do NOT run `dot!round`
-2. User runs `dot!enroll` and `dot!email`, receives OTP
-3. User runs `dot!verify <otp>`
+1. Start tournament, do NOT run `!round`
+2. User runs `!enroll` and `!email`, receives OTP
+3. User runs `!verify <otp>`
 Expected: User verifies successfully, NO thread messages
 
 **Step 2: Test - User verifies after round starts**
 
-1. Run `dot!round #channel 1`
-2. Another user runs `dot!enroll`, `dot!email`, `dot!verify <otp>`
+1. Run `!round #channel 1`
+2. Another user runs `!enroll`, `!email`, `!verify <otp>`
 Expected: User is added ONLY to Round 1 match threads
 
 **Step 3: Test - Round transition**
 
-1. Run `dot!round #channel 2`
+1. Run `!round #channel 2`
 2. Another user verifies
 Expected: User is added ONLY to Round 2 match threads (not Round 1)
 
@@ -195,7 +195,7 @@ Add notes to design doc:
 
 This implementation:
 1. Adds `activeRound` field to track current round
-2. Auto-sets active round when `dot!round` creates threads
+2. Auto-sets active round when `!round` creates threads
 3. Filters verified user thread additions to active round only
 4. Handles edge cases (no active round, round transitions)
 

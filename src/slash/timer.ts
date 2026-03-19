@@ -47,7 +47,7 @@ export class TimerCommand extends SlashCommand {
 			await interaction.reply({ content: `You cannot use this.`, ephemeral: true });
 			return;
 		}
-		// Main body, analogous to a simplified dot!round
+		// Main body, analogous to a simplified !round
 		const duration = interaction.options.getString("duration", true);
 		const finalMessage = interaction.options.getString("final_message", true);
 		this.#logger.verbose(`/timer: ${interaction.guildId} ${interaction.user} ${duration} ${finalMessage}`);
@@ -61,7 +61,7 @@ export class TimerCommand extends SlashCommand {
 				end,
 				interaction.channelId,
 				finalMessage,
-				5 // update every 5 seconds, matches dot!round
+				5 // update every 5 seconds, matches !round
 			);
 		} catch (error) {
 			if (error instanceof UserError) {

@@ -70,7 +70,7 @@
 			<button class="btn btn-primary" onclick="openCSVImportModal('participants')">
 				<span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Import CSV
 			</button>
-			<a href="/docs/csv-format-participants" target="_blank" class="help-link">CSV Format Guide</a>
+			<button class="help-link" style="background: none; border: none; padding: 0;" onclick="openCSVFormatModal('participants')">CSV Format Guide</button>
 		</div>
 		<div class="table-container">
 			<table class="table">
@@ -100,7 +100,7 @@
 			<button class="btn btn-primary" onclick="openCSVImportModal('schedules')">
 				<span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Import CSV
 			</button>
-			<a href="/docs/csv-format-schedules" target="_blank" class="help-link">CSV Format Guide</a>
+			<button class="help-link" style="background: none; border: none; padding: 0;" onclick="openCSVFormatModal('schedules')">CSV Format Guide</button>
 		</div>
 		<div class="table-container">
 			<table class="table">
@@ -319,7 +319,166 @@
 	</div>
 </div>
 
+<!-- CSV Format Guide Modal - Participants -->
+<div id="csv-format-participants-modal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeCSVFormatModal()">
+	<div class="modal modal-large">
+		<div class="modal-header">
+			<h3 class="modal-title">CSV Format Guide - Participants</h3>
+			<button class="modal-close" onclick="closeCSVFormatModal()">&times;</button>
+		</div>
+		<div class="modal-body">
+			<div class="csv-format-guide">
+				<h4>Required Columns</h4>
+				<p>Your CSV file must include the following columns in the header row:</p>
+				<table class="table table-sm">
+					<thead>
+						<tr>
+							<th>Column</th>
+							<th>Description</th>
+							<th>Required</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><code>email</code></td>
+							<td>Captain's email address</td>
+							<td>Yes</td>
+						</tr>
+						<tr>
+							<td><code>name</code></td>
+							<td>Captain's full name</td>
+							<td>Yes</td>
+						</tr>
+						<tr>
+							<td><code>team</code></td>
+							<td>Team name</td>
+							<td>Yes</td>
+						</tr>
+						<tr>
+							<td><code>discord</code></td>
+							<td>Discord username (e.g., username#0000)</td>
+							<td>No</td>
+						</tr>
+					</tbody>
+				</table>
 
+				<h4 style="margin-top: 24px;">Example CSV</h4>
+				<pre style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); overflow-x: auto;">email,name,team,discord
+captain1@example.com,John Doe,Team Alpha,johndoe#1234
+captain2@example.com,Jane Smith,Team Beta,janesmith#5678
+captain3@example.com,Bob Wilson,Team Gamma,</pre>
+
+				<h4 style="margin-top: 24px;">Download Template</h4>
+				<p>Download a blank template to get started:</p>
+				<button class="btn btn-secondary" onclick="downloadParticipantTemplate()">
+					<span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+					Download Participant Template
+				</button>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary" onclick="closeCSVFormatModal()">Got it</button>
+		</div>
+	</div>
+</div>
+
+<!-- CSV Format Guide Modal - Schedules -->
+<div id="csv-format-schedules-modal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeCSVFormatModal()">
+	<div class="modal modal-large">
+		<div class="modal-header">
+			<h3 class="modal-title">CSV Format Guide - Schedules</h3>
+			<button class="modal-close" onclick="closeCSVFormatModal()">&times;</button>
+		</div>
+		<div class="modal-body">
+			<div class="csv-format-guide">
+				<h4>Required Columns</h4>
+				<p>Your CSV file must include the following columns in the header row:</p>
+				<table class="table table-sm">
+					<thead>
+						<tr>
+							<th>Column</th>
+							<th>Description</th>
+							<th>Required</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><code>match_id</code></td>
+							<td>Unique match identifier</td>
+							<td>Yes</td>
+						</tr>
+						<tr>
+							<td><code>scheduled_time</code></td>
+							<td>Scheduled time in YYYY-MM-DD HH:MM:SS format</td>
+							<td>Yes</td>
+						</tr>
+						<tr>
+							<td><code>timezone</code></td>
+							<td>Timezone abbreviation (e.g., IST, UTC, EST). Defaults to UTC if not provided.</td>
+							<td>No</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h4 style="margin-top: 24px;">Optional Columns (for reference)</h4>
+				<p>These columns are optional but helpful for identifying matches. They are ignored during import:</p>
+				<table class="table table-sm">
+					<thead>
+						<tr>
+							<th>Column</th>
+							<th>Description</th>
+							<th>Required</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><code>round</code></td>
+							<td>Round number</td>
+							<td>No</td>
+						</tr>
+						<tr>
+							<td><code>teams</code></td>
+							<td>Team names (e.g., "Team A vs Team B")</td>
+							<td>No</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h4 style="margin-top: 24px;">Existing Schedules</h4>
+				<p>Here are your current schedules. Copy this data, update the times, and import it back:</p>
+
+				<div id="existing-schedules-loading" style="text-align: center; padding: 20px; color: var(--text-secondary);">
+					<div class="spinner"></div> Loading existing schedules...
+				</div>
+
+				<div id="existing-schedules-content" style="display: none;">
+					<div style="display: flex; gap: 8px; margin-bottom: 12px;">
+						<button class="btn btn-secondary btn-sm" onclick="copyScheduleCSV()">
+							<span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></span>
+							Copy CSV
+						</button>
+						<button class="btn btn-primary btn-sm" onclick="downloadScheduleTemplate()">
+							<span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+							Download CSV
+						</button>
+					</div>
+					<pre id="existing-schedules-csv" style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); overflow-x: auto; max-height: 300px; overflow-y: auto;"></pre>
+				</div>
+
+				<div id="existing-schedules-empty" style="display: none; padding: 20px; background: var(--bg-secondary); border-radius: var(--radius-sm); text-align: center; color: var(--text-secondary);">
+					<p>No schedules found. Download a blank template to get started:</p>
+					<button class="btn btn-secondary" onclick="downloadBlankScheduleTemplate()">
+						<span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+						Download Blank Template
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary" onclick="closeCSVFormatModal()">Got it</button>
+		</div>
+	</div>
+</div>
 
 <style>
 .tournament-detail-page {
@@ -445,6 +604,21 @@
 	text-align: center;
 	padding: 40px !important;
 	color: var(--text-secondary);
+}
+
+/* Spinner */
+.spinner {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--border);
+	border-top-color: var(--accent);
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
 }
 
 .text-success { color: var(--success); }
@@ -708,6 +882,51 @@
 	border-radius: var(--radius-sm);
 	font-size: 13px;
 	color: var(--warning);
+}
+
+/* CSV Format Guide Styles */
+.csv-format-guide h4 {
+	margin: 0 0 12px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.csv-format-guide p {
+	margin: 0 0 12px;
+	color: var(--text-secondary);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.csv-format-guide code {
+	background: var(--bg-tertiary);
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-family: 'SF Mono', Monaco, monospace;
+	font-size: 13px;
+	color: var(--accent);
+}
+
+.csv-format-guide pre {
+	background: var(--bg-secondary);
+	padding: 16px;
+	border-radius: var(--radius-sm);
+	overflow-x: auto;
+	margin: 12px 0;
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--text-primary);
+}
+
+.csv-format-guide table {
+	margin: 16px 0;
+}
+
+.csv-format-guide th {
+	background: var(--bg-tertiary);
+	font-weight: 600;
+	color: var(--text-primary);
 }
 </style>
 
@@ -1595,4 +1814,183 @@ document.addEventListener('DOMContentLoaded', () => {
 	loadTournamentData();
 	originalDOMContentLoaded();
 });
+
+// ============================================
+// CSV Format Guide Modal Functions
+// ============================================
+
+function openCSVFormatModal(type) {
+	const modalId = type === 'participants' ? 'csv-format-participants-modal' : 'csv-format-schedules-modal';
+	document.getElementById(modalId).style.display = 'flex';
+
+	// Load existing schedules if opening schedules modal
+	if (type === 'schedules') {
+		loadExistingSchedulesForModal();
+	}
+}
+
+function closeCSVFormatModal() {
+	document.getElementById('csv-format-participants-modal').style.display = 'none';
+	document.getElementById('csv-format-schedules-modal').style.display = 'none';
+}
+
+// ============================================
+// CSV Template Download Functions
+// ============================================
+
+function downloadParticipantTemplate() {
+	// Use server-side download endpoint (works reliably in Electron)
+	window.location.href = `/api/tournaments/${tournamentId}/participants/download-template`;
+	Dot.Toast.success('Downloading participant template...');
+}
+
+async function downloadScheduleTemplate() {
+	try {
+		// Use server-side download endpoint (works reliably in Electron)
+		window.location.href = `/api/tournaments/${tournamentId}/schedules/download`;
+		Dot.Toast.success('Downloading schedule template...');
+	} catch (error) {
+		console.error('Failed to download schedule template:', error);
+		Dot.Toast.error('Failed to download template.');
+	}
+}
+
+function downloadBlankScheduleTemplate() {
+	// Use server-side download endpoint (works reliably in Electron)
+	window.location.href = `/api/tournaments/${tournamentId}/schedules/download-blank`;
+	Dot.Toast.success('Downloading blank schedule template...');
+}
+
+function downloadCSV(content, filename) {
+	const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+	const url = URL.createObjectURL(blob);
+
+	// Method 1: Try location.href approach (works in Electron)
+	try {
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		a.style.display = 'none';
+
+		// For Electron/Chromium, we need to append to DOM and use click
+		document.body.appendChild(a);
+
+		// Try click first
+		a.click();
+
+		// If that doesn't trigger, try dispatchEvent
+		setTimeout(() => {
+			if (!document.hasFocus()) {
+				// Download dialog opened, cleanup will happen after
+				setTimeout(() => {
+					document.body.removeChild(a);
+					URL.revokeObjectURL(url);
+				}, 1000);
+			} else {
+				// Try alternative: window.open or location.href
+				window.open(url, '_blank');
+				setTimeout(() => {
+					document.body.removeChild(a);
+					URL.revokeObjectURL(url);
+				}, 100);
+			}
+		}, 100);
+
+		Dot.Toast.success(`Downloading ${filename}...`);
+		return;
+	} catch (e) {
+		console.error('Download method 1 failed:', e);
+	}
+
+	// Method 2: Fallback to opening in new tab
+	try {
+		window.open(url, '_blank');
+		Dot.Toast.success(`Opening ${filename} in new tab...`);
+		setTimeout(() => URL.revokeObjectURL(url), 1000);
+		return;
+	} catch (e) {
+		console.error('Download method 2 failed:', e);
+	}
+
+	// Method 3: Last resort - location.href
+	try {
+		const originalLocation = window.location.href;
+		window.location.href = url;
+		setTimeout(() => {
+			window.location.href = originalLocation;
+			URL.revokeObjectURL(url);
+		}, 100);
+		Dot.Toast.success(`Downloading ${filename}...`);
+	} catch (e) {
+		console.error('All download methods failed:', e);
+		Dot.Toast.error('Download failed. Please copy the CSV content instead.');
+		URL.revokeObjectURL(url);
+	}
+}
+
+// Store existing schedules CSV for copying
+let existingSchedulesCSV = '';
+
+async function loadExistingSchedulesForModal() {
+	// Reset modal state
+	document.getElementById('existing-schedules-loading').style.display = 'block';
+	document.getElementById('existing-schedules-content').style.display = 'none';
+	document.getElementById('existing-schedules-empty').style.display = 'none';
+
+	try {
+		// Fetch existing schedules
+		const response = await Dot.API.get(`/api/tournaments/${tournamentId}/schedules`);
+		const schedules = response.data.data || response.data;
+
+		if (!schedules || schedules.length === 0) {
+			document.getElementById('existing-schedules-loading').style.display = 'none';
+			document.getElementById('existing-schedules-empty').style.display = 'block';
+			existingSchedulesCSV = '';
+			return;
+		}
+
+		// Create CSV with existing data including round and teams for reference
+		const headers = 'match_id,scheduled_time,timezone,round,teams';
+		const rows = schedules.map(s => {
+			const date = s.scheduledTime ? new Date(s.scheduledTime) : new Date();
+			// Format: YYYY-MM-DD HH:MM:SS
+			const formattedTime = date.getFullYear() + '-' +
+				String(date.getMonth() + 1).padStart(2, '0') + '-' +
+				String(date.getDate()).padStart(2, '0') + ' ' +
+				String(date.getHours()).padStart(2, '0') + ':' +
+				String(date.getMinutes()).padStart(2, '0') + ':' +
+				String(date.getSeconds()).padStart(2, '0');
+			// Use UTC as default timezone (organizer can change it)
+			const round = s.round || '';
+			const teams = s.player1Name && s.player2Name ? `${s.player1Name} vs ${s.player2Name}` : '';
+			return `${s.matchId},${formattedTime},UTC,${round},"${teams}"`;
+		});
+
+		existingSchedulesCSV = [headers, ...rows].join('\n');
+
+		// Display CSV in modal
+		document.getElementById('existing-schedules-csv').textContent = existingSchedulesCSV;
+		document.getElementById('existing-schedules-loading').style.display = 'none';
+		document.getElementById('existing-schedules-content').style.display = 'block';
+
+	} catch (error) {
+		console.error('Failed to load existing schedules:', error);
+		document.getElementById('existing-schedules-loading').style.display = 'none';
+		document.getElementById('existing-schedules-empty').style.display = 'block';
+		existingSchedulesCSV = '';
+	}
+}
+
+function copyScheduleCSV() {
+	if (!existingSchedulesCSV) {
+		Dot.Toast.error('No schedules to copy');
+		return;
+	}
+
+	navigator.clipboard.writeText(existingSchedulesCSV).then(() => {
+		Dot.Toast.success('CSV copied to clipboard!');
+	}).catch(() => {
+		Dot.Toast.error('Failed to copy to clipboard');
+	});
+}
 </script>

@@ -99,7 +99,7 @@ const command: CommandDefinition = {
 		// Assign participant role
 		const participantRoleAssigned = await assignParticipantRole(member, enrolledPlayer.tournament, logger, support.participantRole);
 		if (!participantRoleAssigned) {
-			await msg.reply(`⚠️ Verified ${enrolledPlayer.name}, but failed to assign participant role. Please create the role or use \`dot!set-participant-role\`.`);
+			await msg.reply(`⚠️ Verified ${enrolledPlayer.name}, but failed to assign participant role. Please create the role or use \`!set-participant-role\`.`);
 			return;
 		}
 

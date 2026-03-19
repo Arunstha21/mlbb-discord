@@ -2,7 +2,7 @@
 
 ## Overview
 
-Add an `activeRound` field to tournaments and modify the verification flow to only add newly verified users to match threads for the currently active round. When a round is started via `dot!round`, it automatically becomes the active round.
+Add an `activeRound` field to tournaments and modify the verification flow to only add newly verified users to match threads for the currently active round. When a round is started via `!round`, it automatically becomes the active round.
 
 ## Problem
 
@@ -12,7 +12,7 @@ Currently, when a user verifies after match threads have been created, the bot a
 
 1. Track which round is currently active for each tournament
 2. Only add verified users to match threads for the active round
-3. Auto-set active round when `dot!round` creates threads
+3. Auto-set active round when `!round` creates threads
 4. If no active round is set, skip adding to any threads (not fall back to all threads)
 
 ## Database Changes

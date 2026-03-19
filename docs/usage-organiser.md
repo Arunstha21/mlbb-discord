@@ -19,26 +19,26 @@ they cannot be accessed from other servers.
 ## Index
 
 ### Main tournament workflow
-1. [dot!list](#list-ongoing-tournaments)
-1. [dot!addhost](#add-host)
-1. [dot!enroll](#enroll-players-via-csv)
-1. [dot!info](#show-tournament-details)
-1. [dot!round](#proceed-to-the-next-round)
-1. [dot!forcescore](#override-score)
+1. [!list](#list-ongoing-tournaments)
+1. [!addhost](#add-host)
+1. [!enroll](#enroll-players-via-csv)
+1. [!info](#show-tournament-details)
+1. [!round](#proceed-to-the-next-round)
+1. [!forcescore](#override-score)
 
 ### Tournament administration
-1. [dot!removehost](#remove-host)
-1. [dot!update](#update-tournament-information)
+1. [!removehost](#remove-host)
+1. [!update](#update-tournament-information)
 
 ### Informational
-1. [dot!info](#show-tournament-details)
-1. [dot!sync](#synchronise-tournament-info)
+1. [!info](#show-tournament-details)
+1. [!sync](#synchronise-tournament-info)
 
 ## Reference
 
 ### List ongoing tournaments
 ```
-dot!list
+!list
 ```
 **Caller permission level**: DOT-TO role
 
@@ -46,7 +46,7 @@ Responds with a list of all preparing and in progress tournaments, including the
 
 ### Add host
 ```
-dot!addhost [id] @discordtag
+!addhost [id] @discordtag
 ```
 **Caller permission level**: host for the tournament (identified by _id_ if multiple tournaments exist)
 
@@ -57,7 +57,7 @@ If there's only one tournament in the server, you can omit the _id_ parameter.
 
 ### Remove host
 ```
-dot!removehost [id] @discordtag
+!removehost [id] @discordtag
 ```
 **Caller permission level**: host for the tournament (identified by _id_ if multiple tournaments exist)
 
@@ -72,7 +72,7 @@ powers for their tournaments if they return.
 
 ### Enroll players via CSV
 ```
-dot!enroll [id] <CSV attachment>
+!enroll [id] <CSV attachment>
 ```
 **Caller permission level**: DOT-TO role
 
@@ -89,7 +89,7 @@ Player Two,player2@example.com,Team Beta,player2#5678
 
 ### Update tournament information
 ```
-dot!update [id] name description
+!update [id] name description
 ```
 **Caller permission level**: host for the tournament (identified by _id_ if multiple tournaments exist)
 
@@ -100,7 +100,7 @@ If there's only one tournament in the server, you can omit the _id_ parameter.
 
 ### Proceed to the next round
 ```
-dot!round [id] channelId roundNumber
+!round [id] channelId roundNumber
 ```
 **Caller permission level**: host for the tournament (identified by _id_ if multiple tournaments exist)
 
@@ -121,7 +121,7 @@ for each match and notifying participants.
 
 ### Override score
 ```
-dot!forcescore [id] score @winner
+!forcescore [id] score @winner
 ```
 **Caller permission level**: host for the tournament (identified by _id_ if multiple tournaments exist)
 
@@ -140,7 +140,7 @@ the match outcome, as if playing golf.
 
 ### Show tournament details
 ```
-dot!info [id]
+!info [id]
 ```
 **Caller permission level**: everybody
 
@@ -151,7 +151,7 @@ If there's only one tournament in the server, you can omit the _id_ parameter.
 
 ### Synchronise tournament info
 ```
-dot!sync [id]
+!sync [id]
 ```
 **Caller permission level**: host for the tournament (identified by _id_ if multiple tournaments exist)
 

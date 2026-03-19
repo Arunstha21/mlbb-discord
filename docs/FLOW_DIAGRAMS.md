@@ -7,7 +7,7 @@
 │                         PLAYER VERIFICATION                          │
 └─────────────────────────────────────────────────────────────────────┘
 
-                              dot!check
+                              !check-in
                                   │
                                   ▼
                     ┌─────────────────────────┐
@@ -31,7 +31,7 @@
                                                 ▼
                                       ┌─────────────────┐
                                       │ In ticket:      │
-                                      │ dot!email       │
+                                      │ !email       │
                                       │ <address>       │
                                       └────────┬─────────┘
                                                │
@@ -42,7 +42,7 @@
                                                │
                                                ▼
                                       ┌─────────────────┐
-                                      │ dot!verify      │
+                                      │ !verify      │
                                       │ <otp>           │
                                       └────────┬─────────┘
                                                │
@@ -61,7 +61,7 @@
                           SCORE REPORTING                             │
 └─────────────────────────────────────────────────────────────────────┘
 
-                        Player: dot!score ID 2-1
+                        Player: !score ID 2-1
                                   │
                                   ▼
                     ┌─────────────────────────┐
@@ -109,7 +109,7 @@
                             │
                             ▼
               ┌─────────────────────────────┐
-              │  dot!enroll ID [attach CSV] │
+              │  !enroll ID [attach CSV] │
               └─────────────┬───────────────┘
                             │
                             ▼
@@ -126,13 +126,13 @@
                             │
                             ▼
               ┌─────────────────────────────┐
-              │  Players run dot!check      │
+              │  Players run !check-in      │
               │  to verify via username     │
               └─────────────┬───────────────┘
                             │
                             ▼
               ┌─────────────────────────────┐
-              │  dot!addhost ID @cohost     │
+              │  !addhost ID @cohost     │
               │  (optional)                 │
               └─────────────────────────────┘
 
@@ -145,7 +145,7 @@
                         ROUND MANAGEMENT                              │
 └─────────────────────────────────────────────────────────────────────┘
 
-                   dot!round ID #channel 1
+                   !round ID #channel 1
                             │
                             ▼
               ┌─────────────────────────────┐
@@ -168,7 +168,7 @@
                             │
                             ▼
               ┌─────────────────────────────┐
-              │  Players use dot!score      │
+              │  Players use !score      │
               │  in their match threads     │
               └─────────────────────────────┘
 
@@ -185,23 +185,23 @@
                     │ Player  │ Host    │ TO      │
 Command             │         │         │         │
 ─────────────────────────────────────────────────────────────────────
-dot!check           │    ✓    │         │         │
-dot!email           │    ✓    │         │         │
-dot!verify          │    ✓    │         │         │
-dot!score           │    ✓    │         │    ✗    │
-dot!coin            │    ✓    │    ✓    │    ✓    │
-dot!toss            │    ✓    │    ✓    │    ✓    │ (alias for coin)
-dot!forcescore      │         │         │    ✓    │
-dot!enroll          │         │         │    ✓    │
-dot!sync            │         │    ✓    │    ✓    │
-dot!update          │         │    ✓    │    ✓    │
-dot!addhost         │         │         │    ✓    │
-dot!removehost      │         │         │    ✓    │
-dot!list            │         │         │    ✓    │
-dot!info            │    ✓    │    ✓    │    ✓    │
-dot!round           │         │    ✓    │    ✓    │
-dot!close           │         │         │    ✓    │
-dot!help            │    ✓    │    ✓    │    ✓    │
+!check-in           │    ✓    │         │         │
+!email           │    ✓    │         │         │
+!verify          │    ✓    │         │         │
+!score           │    ✓    │         │    ✗    │
+!coin            │    ✓    │    ✓    │    ✓    │
+!toss            │    ✓    │    ✓    │    ✓    │ (alias for coin)
+!forcescore      │         │         │    ✓    │
+!enroll          │         │         │    ✓    │
+!sync            │         │    ✓    │    ✓    │
+!update          │         │    ✓    │    ✓    │
+!addhost         │         │         │    ✓    │
+!removehost      │         │         │    ✓    │
+!list            │         │         │    ✓    │
+!info            │    ✓    │    ✓    │    ✓    │
+!round           │         │    ✓    │    ✓    │
+!close           │         │         │    ✓    │
+!help            │    ✓    │    ✓    │    ✓    │
                     └─────────┴─────────┴─────────┘
 
 Legend: ✓ = Can use | Empty = Cannot use
