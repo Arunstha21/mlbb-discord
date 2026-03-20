@@ -23,7 +23,7 @@ function getCredentials(): Credentials | null {
     // Fallback to credentials.json for local development
     try {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        return require('../../../credentials.json');
+        return require('C:/mlbb-data/credentials/credentials.json');
     } catch {
         return null;
     }

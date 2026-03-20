@@ -113,3 +113,4 @@ dist
 backups/
 /data/
 credentials.json
+credentials copy.json

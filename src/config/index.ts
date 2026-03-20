@@ -17,7 +17,7 @@ if (configPath) {
 			process.env.DOT_DEFAULT_PREFIX = config.bot.defaultPrefix;
 			process.env.DOT_DEFAULT_TO_ROLE = config.bot.defaultToRole;
 			process.env.DOT_PARTICIPANT_ROLE = config.bot.participantRole || 'Participant';
-			process.env.SQLITE_DB = config.database.path || './data/dot.db';
+			process.env.SQLITE_DB = config.database.path || 'C:/mlbb-data/database/dot.db';
 			process.env.POSTGRESQL_URL = config.database.url || '';
 			process.env.WEB_PORT = config.web.port?.toString() || '3000';
 			process.env.DOT_LOGGER_WEBHOOK = config.logging.webhook || '';

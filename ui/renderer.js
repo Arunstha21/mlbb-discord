@@ -178,7 +178,7 @@ function handleConfigSubmit(e) {
             defaultPrefix: document.getElementById('bot-prefix').value,
             defaultToRole: document.getElementById('bot-to-role').value
         },
-        database: { type: 'sqlite', path: './data/dot.db' },
+        database: { type: 'sqlite', path: 'C:/mlbb-data/database/dot.db' },
         web: { port: 3000, autoIncrement: true },
         logging: { level: 'info' }
     };

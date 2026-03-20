@@ -73,7 +73,7 @@ export function configToEnv(config: BotConfig): NodeJS.ProcessEnv {
     DOT_DEFAULT_PREFIX: config.bot.defaultPrefix,
     DOT_DEFAULT_TO_ROLE: config.bot.defaultToRole,
     DOT_PARTICIPANT_ROLE: config.bot.participantRole || 'Participant',
-    SQLITE_DB: config.database.path || './data/dot.db',
+    SQLITE_DB: config.database.path || 'C:/mlbb-data/database/dot.db',
     POSTGRESQL_URL: config.database.url || '',
     WEB_PORT: config.web.port.toString(),
     DOT_LOGGER_WEBHOOK: config.logging.webhook || '',
