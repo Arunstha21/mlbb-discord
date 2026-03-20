@@ -88,6 +88,12 @@ const command: CommandDefinition = {
 				return;
 			}
 
+			// If player has OTP set, they must use !verify command instead
+			if (matchedPlayer.otp) {
+				await msg.reply(`We found your enrollment, but you need to verify using your OTP. Please use \`!verify <your_otp>\` command in a ticket channel. Use \`!check-in\` again to create a ticket if needed.`);
+				return;
+			}
+
 			// Auto-verify based on local database match
 			// Players are verified by Discord username matching enrolled data
 			// Team roles are assigned separately, Challonge uses team names

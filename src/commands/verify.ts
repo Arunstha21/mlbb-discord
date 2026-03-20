@@ -87,18 +87,24 @@ const command: CommandDefinition = {
 
 		const verificationPromises = matchingPlayers.map(async (player) => {
 			try {
-				// Mark player as verified in the database
+				// Assign participant role first - if this fails, don't mark as verified
+				let roleAssigned = true;
+				if (member && player.tournament) {
+					roleAssigned = await assignParticipantRole(member, player.tournament, logger, support.participantRole);
+					if (!roleAssigned) {
+						logger.warn(`Failed to assign participant role to ${msg.author.tag} during verify command`);
+						return {
+							success: false,
+							tournamentId: player.tournamentId,
+							error: "Role assignment failed"
+						};
+					}
+				}
+
+				// Mark player as verified in the database and clear OTP only after successful role assignment
 				player.verified = true;
 				player.otp = undefined;
 				await player.save();
-
-				// Assign participant role
-				if (member && player.tournament) {
-					const roleAssigned = await assignParticipantRole(member, player.tournament, logger, support.participantRole);
-					if (!roleAssigned) {
-						logger.warn(`Failed to assign participant role to ${msg.author.tag} during verify command`);
-					}
-				}
 
 				// Add user to existing match threads if verification happened after thread creation
 				if (msg.guild) {
@@ -113,7 +119,8 @@ const command: CommandDefinition = {
 				logger.error(`Failed to verify player ${player.name} for ${player.tournamentId}:`, err);
 				return {
 					success: false,
-					tournamentId: player.tournamentId
+					tournamentId: player.tournamentId,
+					error: String(err)
 				};
 			}
 		});
@@ -156,9 +163,21 @@ const command: CommandDefinition = {
 				}, 5000);
 			}
 		} else {
+			// Check if there were any failures and provide specific error info
+			const failedResults = results.filter(r => !r.success);
+			const errorMessages = failedResults
+				.map(r => (r as { success: false; tournamentId: string; error?: string }).error)
+				.filter(Boolean);
+
+			let errorMsg = "An error occurred during verification.";
+			if (errorMessages.length > 0) {
+				errorMsg += `\n\n**Reason:** ${errorMessages[0]}`;
+			}
+			errorMsg += "\n\nPlease contact a Tournament Organizer for assistance.";
+
 			const embed = new EmbedBuilder()
 				.setTitle("Verification Failed")
-				.setDescription("An error occurred during verification. Please try again or contact a Tournament Organizer.")
+				.setDescription(errorMsg)
 				.setColor(0xff0000);
 			await msg.reply({ embeds: [embed] });
 		}
