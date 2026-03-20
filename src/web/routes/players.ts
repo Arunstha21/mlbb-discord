@@ -31,10 +31,16 @@ router.get("/api/players/search", async (req: Request, res: Response) => {
 		const players = await EnrolledPlayer.find({
 			where: whereConditions,
 			relations: ["tournament"],
-			order: {
-				tournament: { name: "ASC" },
-				team: "ASC",
-			},
+		});
+
+		// Sort manually by tournament name, then team name
+		players.sort((a, b) => {
+			const aTournamentName = a.tournament?.name || "";
+			const bTournamentName = b.tournament?.name || "";
+			if (aTournamentName !== bTournamentName) {
+				return aTournamentName.localeCompare(bTournamentName);
+			}
+			return a.team.localeCompare(b.team);
 		});
 
 		// Transform response
@@ -47,10 +53,10 @@ router.get("/api/players/search", async (req: Request, res: Response) => {
 			discordId: p.discordId,
 			verified: p.verified,
 			challongeId: p.challongeId,
-			tournament: {
+			tournament: p.tournament ? {
 				id: p.tournament.tournamentId,
 				name: p.tournament.name,
-			},
+			} : null,
 		}));
 
 		res.json({

@@ -55,35 +55,43 @@
 			return;
 		}
 
-		tbody.innerHTML = players.map(p => `
-			<tr data-player-id="${p.id}" onclick="navigateToTournament('${p.tournament.id}')">
-				<td><strong>${escapeHtml(p.name || '—')}</strong></td>
-				<td>${escapeHtml(p.email)}</td>
-				<td>${escapeHtml(p.team)}</td>
-				<td>
-					${p.verified
-						? `<span class="verified-badge">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-									<polyline points="20 6 9 17 4 12"></polyline>
-								</svg>
-								${escapeHtml(p.discordUsername || 'Verified')}
-							</span>`
-						: `<span class="unverified-badge">${escapeHtml(p.discordUsername || '—')}</span>`
-					}
-				</td>
-				<td>
-					<a href="/tournaments/${p.tournament.id}" class="tournament-link" onclick="event.stopPropagation()">
-						${escapeHtml(p.tournament.name)}
-					</a>
-				</td>
-				<td onclick="event.stopPropagation()">
-					<div class="action-buttons">
-						<button class="btn btn-sm btn-secondary btn-icon" onclick="openEditModal(${p.id})">Edit</button>
-						<button class="btn btn-sm btn-danger btn-icon" onclick="deletePlayer(${p.id}, '${escapeJs(p.name)}', '${escapeJs(p.tournament.name)}')">Delete</button>
-					</div>
-				</td>
-			</tr>
-		`).join('');
+		tbody.innerHTML = players.map(p => {
+			const tournamentId = p.tournament ? p.tournament.id : '';
+			const tournamentName = p.tournament ? p.tournament.name : 'No Tournament';
+			const displayName = p.name || '—';
+			const displayDiscord = p.discordUsername || '—';
+
+			return `
+				<tr data-player-id="${p.id}" ${tournamentId ? `onclick="navigateToTournament('${tournamentId}')"` : ''}>
+					<td><strong>${escapeHtml(displayName)}</strong></td>
+					<td>${escapeHtml(p.email)}</td>
+					<td>${escapeHtml(p.team)}</td>
+					<td>
+						${p.verified
+							? `<span class="verified-badge">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+										<polyline points="20 6 9 17 4 12"></polyline>
+									</svg>
+									${escapeHtml(displayDiscord)}
+								</span>`
+							: `<span class="unverified-badge">${escapeHtml(displayDiscord)}</span>`
+						}
+					</td>
+					<td>
+						${tournamentId
+							? `<a href="/tournaments/${tournamentId}" class="tournament-link" onclick="event.stopPropagation()">${escapeHtml(tournamentName)}</a>`
+							: `<span class="tournament-link">${escapeHtml(tournamentName)}</span>`
+						}
+					</td>
+					<td onclick="event.stopPropagation()">
+						<div class="action-buttons">
+							<button class="btn btn-sm btn-secondary btn-icon" onclick="openEditModal(${p.id})">Edit</button>
+							<button class="btn btn-sm btn-danger btn-icon" onclick="deletePlayer(${p.id}, '${escapeJs(displayName)}', '${escapeJs(tournamentName)}')">Delete</button>
+						</div>
+					</td>
+				</tr>
+			`;
+		}).join('');
 	}
 
 	// Navigate to tournament
@@ -112,6 +120,11 @@
 	function openEditModal(playerId) {
 		const player = players.find(p => p.id === playerId);
 		if (!player) return;
+
+		if (!player.tournament) {
+			Dot.Toast.error('Cannot edit player without a tournament');
+			return;
+		}
 
 		document.getElementById('edit-player-id').value = player.id;
 		document.getElementById('edit-tournament-id').value = player.tournament.id;
@@ -144,6 +157,11 @@
 			return;
 		}
 
+		if (!tournamentId) {
+			Dot.Toast.error('Cannot update player without a tournament');
+			return;
+		}
+
 		try {
 			await Dot.API.put(`/api/tournaments/${tournamentId}/participants/${playerId}`, {
 				name,
@@ -164,6 +182,11 @@
 	function deletePlayer(playerId, playerName, tournamentName) {
 		const player = players.find(p => p.id === playerId);
 		if (!player) return;
+
+		if (!player.tournament) {
+			Dot.Toast.error('Cannot delete player without a tournament');
+			return;
+		}
 
 		Dot.Modal.confirm(
 			'Delete Player',

@@ -93,9 +93,21 @@ const command: CommandDefinition = {
 				return;
 			}
 
+			let totalSuccess = 0;
+			let totalFailed = 0;
+			const failures: string[] = [];
+
 			// Group players by guild and tournament
 			const playersByGuild = new Map<string, EnrolledPlayer[]>();
 			for (const player of verifiedPlayers) {
+				// Skip players without a tournament relation
+				if (!player.tournament) {
+					logger.warn(`Player ${player.name} (${player.discordId}) has no tournament relation, skipping`);
+					totalFailed++;
+					failures.push(`${player.name} - No tournament relation`);
+					continue;
+				}
+
 				const guildId = player.tournament.owningDiscordServer;
 				if (!playersByGuild.has(guildId)) {
 					playersByGuild.set(guildId, []);
@@ -103,22 +115,27 @@ const command: CommandDefinition = {
 				playersByGuild.get(guildId)!.push(player);
 			}
 
-			let totalSuccess = 0;
-			let totalFailed = 0;
-			const failures: string[] = [];
-
 			// Process each guild
 			for (const [guildId, players] of playersByGuild.entries()) {
 				const guild = await msg.client.guilds.fetch(guildId).catch(() => null);
 				if (!guild) {
 					logger.warn(`Could not fetch guild ${guildId}`);
 					totalFailed += players.length;
+					failures.push(`Guild ${guildId} - Could not fetch guild`);
 					continue;
 				}
 
 				// Process players with delay for rate limiting
 				for (const player of players) {
 					if (!player.discordId) continue;
+
+					// Skip players without a tournament relation
+					if (!player.tournament) {
+						logger.warn(`Player ${player.name} (${player.discordId}) has no tournament relation, skipping`);
+						totalFailed++;
+						failures.push(`${player.name} - No tournament relation`);
+						continue;
+					}
 
 					try {
 						const member = await guild.members.fetch(player.discordId).catch(() => null);

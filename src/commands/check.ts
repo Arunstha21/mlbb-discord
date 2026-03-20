@@ -121,9 +121,10 @@ const command: CommandDefinition = {
 			ch => ch.name.toLowerCase() === TICKETS_CATEGORY_NAME && ch.type === ChannelType.GuildCategory
 		);
 
-		// Check if user already has an open ticket
-		const existingTicket = msg.guild.channels.cache.find(ch =>
-			ch.type === ChannelType.GuildText &&
+		// Check if user already has an open ticket by fetching all channels
+		const allChannels = await msg.guild.channels.fetch();
+		const existingTicket = allChannels.find(ch =>
+			ch?.type === ChannelType.GuildText &&
 			ch.name === `${TICKET_CHANNEL_PREFIX}${msg.author.username}`
 		);
 
