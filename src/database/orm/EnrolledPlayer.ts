@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ChallongeTournament } from "./ChallongeTournament";
 
 @Entity()
@@ -37,5 +37,6 @@ export class EnrolledPlayer extends BaseEntity {
 	challongeId?: number;
 
 	@ManyToOne(() => ChallongeTournament, t => t.enrolledPlayers, { onDelete: "CASCADE" })
+	@JoinColumn({ name: "tournamentId" })
 	tournament!: ChallongeTournament;
 }

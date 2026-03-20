@@ -6,10 +6,11 @@ import { ParticipantRoleProvider } from "../role/participant";
 
 /**
  * Gets the participant role name for a tournament.
- * Returns tournament-specific role, or default from config.
+ * Returns tournament-specific custom role if set, otherwise uses the auto-generated format.
+ * The auto-generated format matches ParticipantRoleProvider's naming: {tournamentId}-player
  */
 export function getParticipantRoleName(tournament: ChallongeTournament): string {
-	return tournament.participantRoleName || getConfig().participantRole;
+	return tournament.participantRoleName || `${tournament.tournamentId}-player`;
 }
 
 /**
@@ -17,7 +18,7 @@ export function getParticipantRoleName(tournament: ChallongeTournament): string 
  *
  * If tournament.participantRoleName is configured, uses that specific role.
  * Otherwise, uses ParticipantRoleProvider to auto-create and assign a role
- * with the pattern "MC-{tournamentId}-player".
+ * with the pattern "{tournamentId}-player".
  *
  * @param member - The guild member to assign the role to
  * @param tournament - The tournament to get the role name from
