@@ -20,12 +20,14 @@
 					<th>Tournament Name</th>
 					<th>Status</th>
 					<th>Format</th>
+					<th>Verified</th>
+					<th>Unverified</th>
 					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody id="tournaments-body">
 				<tr>
-					<td colspan="5" class="loading-row">
+					<td colspan="7" class="loading-row">
 						<div class="spinner"></div> Loading tournaments...
 					</td>
 				</tr>
@@ -210,7 +212,7 @@ async function loadTournaments() {
 		console.error('Error details:', error.message, error.stack);
 		document.getElementById('tournaments-body').innerHTML = `
 			<tr>
-				<td colspan="5" class="empty-state">
+				<td colspan="7" class="empty-state">
 					Failed to load tournaments
 				</td>
 			</tr>
@@ -233,7 +235,7 @@ function renderTournaments() {
 	if (filtered.length === 0) {
 		tbody.innerHTML = `
 			<tr>
-				<td colspan="5" class="empty-state">
+				<td colspan="7" class="empty-state">
 					<div class="empty-state-text">No tournaments found</div>
 					<div class="empty-state-help">Create a new tournament to get started</div>
 				</td>
@@ -252,6 +254,8 @@ function renderTournaments() {
 			</td>
 			<td><span class="badge badge-${getStatusBadgeClass(t.status)}">${t.status}</span></td>
 			<td>${t.format || '—'}</td>
+			<td style="color: var(--success);">${t.verifiedCount || 0}</td>
+			<td style="color: var(--warning);">${t.unverifiedCount || 0}</td>
 			<td>
 				<div class="action-buttons">
 					<button class="btn btn-sm btn-primary" onclick="syncTournament('${t.id}', '${escapeHtml(t.name)}')">Sync</button>

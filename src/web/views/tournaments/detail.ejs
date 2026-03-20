@@ -33,6 +33,14 @@
 			<div class="info-label">Capacity</div>
 			<div class="info-value" id="t-capacity">&mdash;</div>
 		</div>
+		<div class="info-card">
+			<div class="info-label">Verified Players</div>
+			<div class="info-value" id="t-verified-count" style="color: var(--success);">&mdash;</div>
+		</div>
+		<div class="info-card">
+			<div class="info-label">Unverified Players</div>
+			<div class="info-value" id="t-unverified-count" style="color: var(--warning);">&mdash;</div>
+		</div>
 	</div>
 
 	<!-- Tabs Container -->
@@ -993,7 +1001,11 @@ function renderInfo(t) {
 	
 	const cap = t.participantLimit ? `${t.enrolledCount || 0} / ${t.participantLimit}` : `${t.enrolledCount || 0} / ∞`;
 	document.getElementById('t-capacity').textContent = cap;
-	
+
+	// Verification Stats
+	document.getElementById('t-verified-count').textContent = t.verifiedCount || 0;
+	document.getElementById('t-unverified-count').textContent = t.unverifiedCount || 0;
+
 	// Tab Counts
 	document.getElementById('t-p-count').textContent = t.enrolledCount || 0;
 	document.getElementById('t-s-count').textContent = t.scheduledCount || 0;

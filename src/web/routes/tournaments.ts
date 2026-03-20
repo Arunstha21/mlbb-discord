@@ -34,19 +34,34 @@ router.get("/api/tournaments", async (req: Request, res: Response) => {
 	try {
 		const tournaments = await ChallongeTournament.find();
 
+		// Get verification counts for each tournament
+		const tournamentData = await Promise.all(
+			tournaments.map(async (t: ChallongeTournament) => {
+				const verifiedCount = await EnrolledPlayer.count({
+					where: { tournamentId: t.tournamentId, verified: true }
+				});
+				const unverifiedCount = await EnrolledPlayer.count({
+					where: { tournamentId: t.tournamentId, verified: false }
+				});
+				return {
+					id: t.tournamentId,
+					challongeId: t.challongeTournamentId,
+					name: t.name,
+					description: t.description,
+					status: t.status,
+					format: t.format,
+					server: t.owningDiscordServer,
+					hosts: t.hosts,
+					participantCount: 0,
+					verifiedCount,
+					unverifiedCount,
+				};
+			})
+		);
+
 		res.json({
 			success: true,
-			data: tournaments.map((t: ChallongeTournament) => ({
-				id: t.tournamentId,
-				challongeId: t.challongeTournamentId,
-				name: t.name,
-				description: t.description,
-				status: t.status,
-				format: t.format,
-				server: t.owningDiscordServer,
-				hosts: t.hosts,
-				participantCount: 0,
-			}))
+			data: tournamentData
 		});
 	} catch (error) {
 		logger.error("Failed to fetch tournaments:", error);
@@ -71,6 +86,16 @@ router.get("/api/tournaments/:id", async (req: Request, res: Response) => {
 			where: { tournamentId: id }
 		});
 
+		// Get verified players count
+		const verifiedCount = await EnrolledPlayer.count({
+			where: { tournamentId: id, verified: true }
+		});
+
+		// Get unverified players count
+		const unverifiedCount = await EnrolledPlayer.count({
+			where: { tournamentId: id, verified: false }
+		});
+
 		// Get scheduled matches count
 		const scheduledCount = await MatchSchedule.count({
 			where: { tournamentId: id }
@@ -90,6 +115,8 @@ router.get("/api/tournaments/:id", async (req: Request, res: Response) => {
 				participantRoleName: tournament.participantRoleName,
 				participantLimit: tournament.participantLimit,
 				enrolledCount,
+				verifiedCount,
+				unverifiedCount,
 				scheduledCount,
 			}
 		});
