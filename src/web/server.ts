@@ -9,6 +9,7 @@ import scheduleRoutes from "./routes/schedules";
 import roundRoutes from "./routes/rounds";
 import systemRoutes from "./routes/system";
 import configRoutes from "./routes/config";
+import playersRoutes from "./routes/players";
 import expressLayouts from "express-ejs-layouts";
 
 const logger = getLogger("web:server");
@@ -81,6 +82,9 @@ export function createWebServer() {
 
 	// Config routes
 	app.use(configRoutes);
+
+	// Players routes
+	app.use(playersRoutes);
 
 	// Redirect root to tournaments
 	app.get("/", (req: Request, res: Response) => {

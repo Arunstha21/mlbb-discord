@@ -10,7 +10,7 @@ import { CommandDefinition } from "../Command";
 import { EnrolledPlayer } from "../database/orm/EnrolledPlayer";
 import { ChallongeTournament } from "../database/orm/ChallongeTournament";
 import { getLogger } from "../util/logger";
-import { isTournamentOrganizer, assignParticipantRole, TO_COMMAND_BLOCKED, TICKETS_CATEGORY_NAME, TICKET_CHANNEL_PREFIX } from "../util";
+import { isTournamentOrganizer, assignParticipantRole, getParticipantRoleName, TO_COMMAND_BLOCKED, TICKETS_CATEGORY_NAME, TICKET_CHANNEL_PREFIX } from "../util";
 
 const logger = getLogger("command:check");
 
@@ -71,6 +71,19 @@ const command: CommandDefinition = {
 			}
 
 			if (matchedPlayer.verified) {
+				// Check if user has the participant role
+				const hasRole = member?.roles.cache.some(role =>
+					role.name === getParticipantRoleName(matchedPlayer.tournament)
+				);
+
+				if (!hasRole && member) {
+					const roleAssigned = await assignParticipantRole(member, matchedPlayer.tournament, logger, support.participantRole);
+					if (roleAssigned) {
+						await msg.reply(`Welcome back! Your participant role for **${matchedPlayer.tournament.name}** has been restored.`);
+						return;
+					}
+				}
+
 				await msg.reply(`You are already verified for the tournament **${matchedPlayer.tournament.name}**.`);
 				return;
 			}
@@ -107,6 +120,17 @@ const command: CommandDefinition = {
 		const category = msg.guild.channels.cache.find(
 			ch => ch.name.toLowerCase() === TICKETS_CATEGORY_NAME && ch.type === ChannelType.GuildCategory
 		);
+
+		// Check if user already has an open ticket
+		const existingTicket = msg.guild.channels.cache.find(ch =>
+			ch.type === ChannelType.GuildText &&
+			ch.name === `${TICKET_CHANNEL_PREFIX}${msg.author.username}`
+		);
+
+		if (existingTicket) {
+			await msg.reply(`You already have an open ticket: <#${existingTicket.id}>`);
+			return;
+		}
 
 		try {
 			const channel = await msg.guild.channels.create({

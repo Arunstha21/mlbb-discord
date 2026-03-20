@@ -4,7 +4,7 @@ import { EnrolledPlayer } from "../database/orm/EnrolledPlayer";
 import { sendEmail } from "../role/helper/email";
 import { getLogger } from "../util/logger";
 import { ChallongeTournament } from "../database/orm/ChallongeTournament";
-import { isTournamentOrganizer, TO_COMMAND_BLOCKED, NO_TOURNAMENTS_FOUND } from "../util";
+import { isTournamentOrganizer, TO_COMMAND_BLOCKED, NO_TOURNAMENTS_FOUND, TICKET_CHANNEL_PREFIX } from "../util";
 
 const logger = getLogger("command:email");
 
@@ -17,7 +17,19 @@ const command: CommandDefinition = {
 			return;
 		}
 
-		const [emailArg] = args;
+		// Restrict to ticket channels only
+		const isTicketChannel =
+			msg.channel.isTextBased() &&
+			"name" in msg.channel &&
+			typeof msg.channel.name === "string" &&
+			msg.channel.name.startsWith(TICKET_CHANNEL_PREFIX);
+
+		if (!isTicketChannel) {
+			await msg.reply("This command can only be used in ticket channels. Please use `!check-in` to create a ticket.");
+			return;
+		}
+
+		let emailArg = args[0].trim().toLowerCase();
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRegex.test(emailArg)) {
 			await msg.reply("Invalid email address.");

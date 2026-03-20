@@ -1,0 +1,188 @@
+<div class="players-page">
+	<div class="page-header">
+		<h2 class="page-title">Player Search</h2>
+	</div>
+
+	<div class="search-bar">
+		<input type="text" class="search-input" id="search-input" placeholder="Search by email or Discord username...">
+		<button class="btn btn-secondary" id="clear-btn" onclick="clearSearch()">Clear</button>
+	</div>
+
+	<div class="table-container">
+		<table class="table" id="players-table">
+			<thead>
+				<tr>
+					<th>Player Name</th>
+					<th>Email</th>
+					<th>Team</th>
+					<th>Discord Username</th>
+					<th>Tournament</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="players-body">
+				<tr>
+					<td colspan="6" class="loading-row">
+						<div class="spinner"></div> Loading players...
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!-- Edit Player Modal -->
+<div id="edit-modal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeEditModal()">
+	<div class="modal">
+		<div class="modal-header">
+			<h3 class="modal-title">Edit Player</h3>
+			<button class="modal-close" onclick="closeEditModal()">&times;</button>
+		</div>
+		<div class="modal-body">
+			<input type="hidden" id="edit-player-id">
+			<input type="hidden" id="edit-tournament-id">
+			<div class="form-group">
+				<label class="form-label">Tournament</label>
+				<input type="text" class="form-input" id="edit-tournament-name" readonly>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Name</label>
+				<input type="text" class="form-input" id="edit-name" required>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Email</label>
+				<input type="email" class="form-input" id="edit-email" readonly>
+				<div class="form-help">Email cannot be changed</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Team</label>
+				<input type="text" class="form-input" id="edit-team" required>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Discord Username</label>
+				<input type="text" class="form-input" id="edit-discord-username" placeholder="user#1234">
+			</div>
+			<div class="form-group">
+				<label class="form-label">
+					<input type="checkbox" id="edit-verified">
+					Verified
+				</label>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+			<button class="btn btn-primary" onclick="savePlayer()">Save Changes</button>
+		</div>
+	</div>
+</div>
+
+<style>
+.players-page {
+	max-width: 1400px;
+}
+
+.page-header {
+	margin-bottom: 24px;
+}
+
+.search-bar {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 16px;
+	align-items: center;
+}
+
+.search-input {
+	flex: 1;
+	padding: 10px 14px;
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	font-size: 14.5px;
+}
+
+.search-input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.loading-row {
+	text-align: center;
+	padding: 40px !important;
+	color: var(--text-secondary);
+}
+
+.table tbody tr {
+	cursor: pointer;
+	transition: background-color var(--transition-fast);
+}
+
+.table tbody tr:hover {
+	background-color: var(--bg-secondary);
+}
+
+.table tbody tr:hover td {
+	background-color: transparent;
+}
+
+.action-buttons {
+	display: flex;
+	gap: 6px;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 60px 20px;
+	color: var(--text-secondary);
+}
+
+.empty-state-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+}
+
+.empty-state-text {
+	font-size: 16px;
+	margin-bottom: 8px;
+}
+
+.empty-state-help {
+	font-size: 14px;
+}
+
+.verified-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--success);
+	font-size: 13px;
+}
+
+.verified-badge svg {
+	width: 14px;
+	height: 14px;
+}
+
+.unverified-badge {
+	color: var(--text-secondary);
+	font-size: 13px;
+}
+
+.tournament-link {
+	color: var(--text-secondary);
+	font-size: 13px;
+}
+
+.tournament-link:hover {
+	color: var(--accent);
+}
+
+.btn-icon {
+	padding: 6px 10px;
+	font-size: 13px;
+}
+</style>
+
+<%- contentFor('script') %>
+<script src="/js/pages/players.js"></script>

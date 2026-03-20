@@ -15,6 +15,7 @@ export { default as schedule } from "./schedule";
 export { default as score } from "./score";
 export { default as status } from "./status";
 export { default as sync } from "./sync";
+export { default as syncRoles } from "./sync-roles";
 export { default as toss } from "./toss";
 export { default as update } from "./update";
 export { default as updatePlayer } from "./updatePlayer";

@@ -23,7 +23,20 @@ function getCredentials(): Credentials | null {
     // Fallback to credentials.json for local development
     try {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        return require('C:/mlbb-data/credentials/credentials.json');
+        const path = require('path');
+        const os = require('os');
+
+        let credentialsPath: string;
+
+        if (process.platform === 'win32') {
+            // Windows path
+            credentialsPath = 'C:/mlbb-data/credentials/credentials.json';
+        } else {
+            // Mac/Linux - use relative path from project root
+            credentialsPath = path.join(__dirname, '../../../credentials.json');
+        }
+
+        return require(credentialsPath);
     } catch {
         return null;
     }

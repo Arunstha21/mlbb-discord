@@ -16,6 +16,18 @@ const command: CommandDefinition = {
 			return;
 		}
 
+		// Restrict to ticket channels only
+		const isTicketChannel =
+			msg.channel.isTextBased() &&
+			"name" in msg.channel &&
+			typeof msg.channel.name === "string" &&
+			msg.channel.name.startsWith(TICKET_CHANNEL_PREFIX);
+
+		if (!isTicketChannel) {
+			await msg.reply("This command can only be used in ticket channels. Please use `!check-in` to create a ticket.");
+			return;
+		}
+
 		const otp = parseInt(args[0], 10);
 		if (isNaN(otp)) {
 			await msg.reply("Please provide a valid numeric OTP.");
