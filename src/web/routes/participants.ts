@@ -72,10 +72,12 @@ router.post("/api/tournaments/:id/participants", async (req: Request, res: Respo
 			return res.status(404).json({ success: false, error: "Tournament not found" });
 		}
 
-		// Check if participant with this email already exists
-		const existing = await EnrolledPlayer.findOne({
-			where: { tournamentId, email }
-		});
+		// Check if participant with this email already exists (case-insensitive)
+		const normalizedEmail = email.trim().toLowerCase();
+		const existing = await EnrolledPlayer.createQueryBuilder("player")
+			.where("player.tournamentId = :tournamentId", { tournamentId })
+			.andWhere("LOWER(player.email) = LOWER(:email)", { email: normalizedEmail })
+			.getOne();
 
 		if (existing) {
 			return res.status(400).json({ success: false, error: "Participant with this email already exists" });
@@ -83,7 +85,7 @@ router.post("/api/tournaments/:id/participants", async (req: Request, res: Respo
 
 		const participant = new EnrolledPlayer();
 		participant.tournamentId = tournamentId;
-		participant.email = email;
+		participant.email = normalizedEmail;
 		participant.name = name;
 		participant.team = team;
 		participant.discordUsername = discordUsername || null;
@@ -216,15 +218,17 @@ router.post("/api/tournaments/:id/participants/import", async (req: Request, res
 			}
 
 			try {
-				let participant = await EnrolledPlayer.findOne({
-					where: { tournamentId, email }
-				});
+				const normalizedEmail = email.trim().toLowerCase();
+				let participant = await EnrolledPlayer.createQueryBuilder("player")
+					.where("player.tournamentId = :tournamentId", { tournamentId })
+					.andWhere("LOWER(player.email) = LOWER(:email)", { email: normalizedEmail })
+					.getOne();
 
 				const isNew = !participant;
 				if (!participant) {
 					participant = new EnrolledPlayer();
 					participant.tournamentId = tournamentId;
-					participant.email = email;
+					participant.email = normalizedEmail;
 					addedCount++;
 				} else {
 					updatedCount++;

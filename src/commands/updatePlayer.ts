@@ -21,7 +21,7 @@ const command: CommandDefinition = {
 		if (!msg.guild) return;
 
 		// Parse arguments: email is first, rest are field:value pairs, optionally tournament ID at end
-		const email = args[0];
+		const email = args[0].trim().toLowerCase();
 		const fieldUpdates: Record<string, string> = {};
 		let tournamentIdArg: string | undefined;
 
@@ -81,11 +81,12 @@ const command: CommandDefinition = {
 			}
 		}
 
-		// Find enrolled player by email
-		const enrolledPlayer = await EnrolledPlayer.findOne({
-			where: { tournament: { tournamentId: tournament.tournamentId }, email },
-			relations: ["tournament"]
-		});
+		// Find enrolled player by email (case-insensitive)
+		const enrolledPlayer = await EnrolledPlayer.createQueryBuilder("player")
+			.innerJoinAndSelect("player.tournament", "tournament")
+			.where("tournament.tournamentId = :tournamentId", { tournamentId: tournament.tournamentId })
+			.andWhere("LOWER(player.email) = LOWER(:email)", { email })
+			.getOne();
 
 		if (!enrolledPlayer) {
 			await msg.reply(`❌ No enrolled player found with email "${email}" in tournament "${tournament.name}".`);
@@ -103,7 +104,7 @@ const command: CommandDefinition = {
 			switch (field) {
 				case "email":
 					oldValue = enrolledPlayer.email;
-					enrolledPlayer.email = value;
+					enrolledPlayer.email = value.trim().toLowerCase();
 					break;
 				case "name":
 					oldValue = enrolledPlayer.name;

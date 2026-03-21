@@ -48,10 +48,10 @@ const command: CommandDefinition = {
 
 		const tournamentIds = tournaments.map(t => t.tournamentId);
 
-		// Find enrolled players with this email in any tournament of this server
-		let players = await EnrolledPlayer.find({
-			where: { email: emailArg }
-		});
+		// Find enrolled players with this email in any tournament of this server (case-insensitive)
+		let players = await EnrolledPlayer.createQueryBuilder("player")
+			.where("LOWER(player.email) = LOWER(:email)", { email: emailArg })
+			.getMany();
 
 		players = players.filter(p => tournamentIds.includes(p.tournamentId));
 

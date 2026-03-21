@@ -74,21 +74,23 @@ const command: CommandDefinition = {
 			const columns = parseCSVRow(lines[i]);
 			const email = columns[emailIdx];
 			if (!email) continue;
+			const normalizedEmail = email.trim().toLowerCase();
 			const name = columns[nameIdx] || "";
 			const team = columns[teamIdx] || "";
 			const discordUsername = discordUsernameIdx !== -1 ? columns[discordUsernameIdx] : undefined;
 
-			let enrolledPlayer = await EnrolledPlayer.findOne({
-				where: { tournamentId: challongeTournament.tournamentId, email },
-				relations: ["tournament"]
-			});
+			let enrolledPlayer = await EnrolledPlayer.createQueryBuilder("player")
+				.innerJoinAndSelect("player.tournament", "tournament")
+				.where("player.tournamentId = :tournamentId", { tournamentId: challongeTournament.tournamentId })
+				.andWhere("LOWER(player.email) = LOWER(:email)", { email: normalizedEmail })
+				.getOne();
 
 			const isNew = !enrolledPlayer;
 			if (!enrolledPlayer) {
 				enrolledPlayer = new EnrolledPlayer();
 				enrolledPlayer.tournament = challongeTournament;
 				enrolledPlayer.tournamentId = challongeTournament.tournamentId;
-				enrolledPlayer.email = email;
+				enrolledPlayer.email = normalizedEmail;
 				addedCount++;
 			} else {
 				updatedCount++;

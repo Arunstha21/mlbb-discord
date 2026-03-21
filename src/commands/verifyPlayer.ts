@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 
 		// Parse arguments
 		const userMention = args[0];
-		const email = args[1];
+		const email = args[1].trim().toLowerCase();
 		const tournamentIdArg = args[2];
 
 		// Parse user mention
@@ -52,11 +52,12 @@ const command: CommandDefinition = {
 			}
 		}
 
-		// Find enrolled player by email
-		const enrolledPlayer = await EnrolledPlayer.findOne({
-			where: { tournament: { tournamentId: tournament.tournamentId }, email },
-			relations: ["tournament"]
-		});
+		// Find enrolled player by email (case-insensitive)
+		const enrolledPlayer = await EnrolledPlayer.createQueryBuilder("player")
+			.innerJoinAndSelect("player.tournament", "tournament")
+			.where("tournament.tournamentId = :tournamentId", { tournamentId: tournament.tournamentId })
+			.andWhere("LOWER(player.email) = LOWER(:email)", { email })
+			.getOne();
 
 		if (!enrolledPlayer) {
 			await msg.reply(`❌ No enrolled player found with email "${email}" in tournament "${tournament.name}".`);
