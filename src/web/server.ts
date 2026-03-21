@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
+import session from "express-session";
 import { Client } from "discord.js";
 import { getConfig } from "../config";
 import { getLogger } from "../util/logger";
@@ -11,6 +12,13 @@ import systemRoutes from "./routes/system";
 import configRoutes from "./routes/config";
 import playersRoutes from "./routes/players";
 import expressLayouts from "express-ejs-layouts";
+
+// Extend express-session types
+declare module "express-session" {
+	interface SessionData {
+		authenticated: boolean;
+	}
+}
 
 const logger = getLogger("web:server");
 
@@ -38,6 +46,64 @@ export function createWebServer() {
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: true }));
 	app.use(express.static(path.join(__dirname, "public")));
+
+	// Session middleware
+	app.use(session({
+		secret: config.webPassword || "dot-tournament-secret",
+		resave: false,
+		saveUninitialized: false,
+		cookie: {
+			maxAge: 24 * 60 * 60 * 1000 // 24 hours
+		}
+	}));
+
+	// Auth middleware - protect all routes except login and static assets
+	const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+		// Skip auth for login routes and static assets
+		const publicPaths = ["/login", "/api/health"];
+		if (publicPaths.includes(req.path) || req.path.startsWith("/css/") || req.path.startsWith("/js/")) {
+			return next();
+		}
+
+		// Check if authenticated
+		if (req.session.authenticated) {
+			return next();
+		}
+
+		// Redirect to login
+		return res.redirect("/login");
+	};
+
+	// Login page
+	app.get("/login", (req: Request, res: Response) => {
+		if (req.session.authenticated) {
+			return res.redirect("/tournaments");
+		}
+		res.render("login", { title: "Login", error: null });
+	});
+
+	// Login handler
+	app.post("/login", (req: Request, res: Response) => {
+		const { password } = req.body;
+
+		if (password === config.webPassword) {
+			req.session.authenticated = true;
+			const redirectTo = (req.query.redirect as string) || "/tournaments";
+			return res.redirect(redirectTo);
+		}
+
+		res.render("login", { title: "Login", error: "Invalid password" });
+	});
+
+	// Logout handler
+	app.get("/logout", (req: Request, res: Response) => {
+		req.session.destroy(() => {
+			res.redirect("/login");
+		});
+	});
+
+	// Apply auth middleware to all routes
+	app.use(authMiddleware);
 
 	// Set EJS as view engine
 	app.use(expressLayouts);

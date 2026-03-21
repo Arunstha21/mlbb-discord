@@ -20,6 +20,7 @@ if (configPath) {
 			process.env.SQLITE_DB = config.database.path || 'C:/mlbb-data/database/dot.db';
 			process.env.POSTGRESQL_URL = config.database.url || '';
 			process.env.WEB_PORT = config.web.port?.toString() || '3000';
+			process.env.WEB_PASSWORD = config.web.password || '';
 			process.env.DOT_LOGGER_WEBHOOK = config.logging.webhook || '';
 			process.env.NODE_ENV = 'production';
 			useJsonConfig = true;
@@ -53,7 +54,8 @@ export function getConfig() {
 		discordToken: assertEnv("DISCORD_TOKEN"),
 		postgresqlUrl: process.env.POSTGRESQL_URL || "",
 		sqliteDb: process.env.SQLITE_DB || "",
-		webPort: parseInt(process.env.WEB_PORT || "3000", 10)
+		webPort: parseInt(process.env.WEB_PORT || "3000", 10),
+		webPassword: process.env.WEB_PASSWORD || ""
 	};
 }
 
