@@ -29,7 +29,9 @@ const command: CommandDefinition = {
 			return;
 		}
 
-		let emailArg = args[0].trim().toLowerCase();
+		// Strip all whitespace including invisible/unicode chars (e.g. \r, non-breaking space)
+		// that mobile Discord clients may inject when users paste emails
+		let emailArg = args[0].replace(/[\s\u00A0\u200B\u200C\u200D\uFEFF\r]/g, "").toLowerCase();
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRegex.test(emailArg)) {
 			await msg.reply("Invalid email address.");

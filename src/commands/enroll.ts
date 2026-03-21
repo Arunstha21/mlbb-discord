@@ -90,11 +90,12 @@ const command: CommandDefinition = {
 				enrolledPlayer = new EnrolledPlayer();
 				enrolledPlayer.tournament = challongeTournament;
 				enrolledPlayer.tournamentId = challongeTournament.tournamentId;
-				enrolledPlayer.email = normalizedEmail;
 				addedCount++;
 			} else {
 				updatedCount++;
 			}
+			// Always normalize email on every import (fixes previously stored mixed-case/whitespace emails)
+			enrolledPlayer.email = normalizedEmail;
 			enrolledPlayer.name = name;
 			enrolledPlayer.team = team;
 			enrolledPlayer.discordUsername = discordUsername;

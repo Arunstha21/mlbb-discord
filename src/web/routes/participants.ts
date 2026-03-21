@@ -228,11 +228,12 @@ router.post("/api/tournaments/:id/participants/import", async (req: Request, res
 				if (!participant) {
 					participant = new EnrolledPlayer();
 					participant.tournamentId = tournamentId;
-					participant.email = normalizedEmail;
 					addedCount++;
 				} else {
 					updatedCount++;
 				}
+				// Always normalize email on every import (fixes previously stored mixed-case/whitespace emails)
+				participant.email = normalizedEmail;
 
 				participant.name = name;
 				participant.team = team;

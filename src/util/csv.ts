@@ -48,6 +48,8 @@ export async function downloadAndValidateCSV(
  * @returns Array of column values
  */
 export function parseCSVRow(row: string): string[] {
+	// Strip Windows-style carriage returns before parsing
+	row = row.replace(/\r/g, "");
 	const values: string[] = [];
 	let current = "";
 	let inQuotes = false;
