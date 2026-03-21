@@ -67,14 +67,29 @@ const command: CommandDefinition = {
 			args = args[0].split(/\s+/);
 		}
 
+		// If no args, show list of all tournaments (requires TO/Host)
+		if (args.length === 0) {
+			// Authenticate first
+			const id = await resolveTournamentId(undefined, msg.guildId);
+			await support.database.authenticateHost(id, msg.author.id, msg.guildId, undefined, isTournamentHost(msg.member, id));
+
+			const list = await support.database.getActiveTournaments(msg.guildId || "private");
+			if (list.length === 0) {
+				await msg.reply("There are no active tournaments.");
+				return;
+			}
+			const text = list
+				.map(t => `ID: ${t.id} | Name: ${t.name} | Status: ${statusEmoji[t.status]} ${t.status} | Players: ${t.players.length}`)
+				.join("\n");
+			await msg.reply(`**Active Tournaments**\n\`\`\`\n${text}\`\`\``);
+			return;
+		}
+
 		// Determine if we're viewing or changing status
 		let id: string;
 		let newStatusString: string | undefined;
 
-		if (args.length === 0) {
-			// No args - view current tournament status
-			id = await resolveTournamentId(undefined, msg.guildId);
-		} else if (args.length === 1) {
+		if (args.length === 1) {
 			// One arg - could be tournament ID or status
 			const possibleStatuses = ["preparing", "in", "progress", "ipr", "complete"];
 			const firstArgLower = args[0].toLowerCase();
@@ -114,9 +129,7 @@ const command: CommandDefinition = {
 			await msg.reply(
 				`**${tournament.name}** Status\n` +
 				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**` +
-				checkInSummary + "\n\n" +
-				`To change status, use: \`!status [id] <new_status>\`\n` +
-				`Available statuses: \`preparing\`, \`in progress\`, \`complete\``
+				checkInSummary
 			);
 			return;
 		}

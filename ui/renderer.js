@@ -117,6 +117,7 @@ function populateConfigForm(config) {
     document.getElementById('challonge-token').value = config.challonge.token;
     document.getElementById('bot-prefix').value = config.bot.defaultPrefix;
     document.getElementById('bot-to-role').value = config.bot.defaultToRole;
+    document.getElementById('web-password').value = config.web?.password || '';
 }
 function restoreFormFromStorage() {
     try {
@@ -179,7 +180,7 @@ function handleConfigSubmit(e) {
             defaultToRole: document.getElementById('bot-to-role').value
         },
         database: { type: 'sqlite', path: 'C:/mlbb-data/database/dot.db' },
-        web: { port: 3000, autoIncrement: true },
+        web: { port: 3000, autoIncrement: true, password: document.getElementById('web-password').value },
         logging: { level: 'info' }
     };
     // Validation
