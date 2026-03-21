@@ -3,7 +3,7 @@ import { TournamentStatus } from "../database/interface";
 import { isTournamentHost } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { resolveTournamentId } from "../util/tournament";
-import { ChallongeTournament } from "../database/orm";
+import { ChallongeTournament, EnrolledPlayer } from "../database/orm";
 
 const logger = getLogger("command:status");
 
@@ -13,19 +13,65 @@ const statusEmoji = {
 	[TournamentStatus.COMPLETE]: "🏁"
 } as const;
 
+async function getCheckInSummary(tournamentId: string): Promise<string> {
+	const players = await EnrolledPlayer.find({
+		where: { tournamentId },
+		relations: ["tournament"]
+	});
+
+	if (players.length === 0) {
+		return "\n\n📋 **No players enrolled yet**";
+	}
+
+	// Group by team and count verified
+	const teamStats = new Map<string, { total: number; checkedIn: number }>();
+
+	for (const player of players) {
+		const team = player.team || "Unknown Team";
+		const stats = teamStats.get(team) || { total: 0, checkedIn: 0 };
+		stats.total++;
+		if (player.verified) {
+			stats.checkedIn++;
+		}
+		teamStats.set(team, stats);
+	}
+
+	// Sort by team name
+	const sortedTeams = Array.from(teamStats.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+	const totalPlayers = players.length;
+	const totalCheckedIn = players.filter(p => p.verified).length;
+
+	let summary = `\n\n📋 **Check-in Summary** (${totalCheckedIn}/${totalPlayers} players checked in)\n`;
+	summary += "```\n";
+
+	for (const [team, stats] of sortedTeams) {
+		const checkMark = stats.checkedIn === stats.total ? "✅" : stats.checkedIn > 0 ? "🔶" : "❌";
+		// Truncate team name if too long for display
+		const displayName = team.length > 20 ? team.substring(0, 17) + "..." : team;
+		summary += `${checkMark} ${displayName.padEnd(20)} ${stats.checkedIn}/${stats.total} checked in\n`;
+	}
+
+	summary += "```";
+
+	return summary;
+}
+
 const command: CommandDefinition = {
 	name: "status",
 	requiredArgs: [],
 	optionalArgs: ["id", "newStatus"],
 	executor: async (msg, args, support) => {
-		// If no args, show current status
+		// If no args, show current status with check-in summary
 		if (args.length === 0) {
 			const id = await resolveTournamentId(undefined, msg.guildId);
 			const tournament = await support.database.getTournament(id);
+			const checkInSummary = await getCheckInSummary(id);
 
 			await msg.reply(
 				`**${tournament.name}** Status\n` +
-				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**\n\n` +
+				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**` +
+				checkInSummary + "\n\n" +
 				`To change status, use: \`!status [id] <new_status>\`\n` +
 				`Available statuses: \`preparing\`, \`in progress\`, \`complete\``
 			);
@@ -37,14 +83,16 @@ const command: CommandDefinition = {
 			args = args[0].split(/\s+/);
 		}
 
-		// If only 1 arg, show status for that tournament
+		// If only 1 arg, show status for that tournament with check-in summary
 		if (args.length === 1) {
 			const id = await resolveTournamentId(args[0], msg.guildId);
 			const tournament = await support.database.getTournament(id);
+			const checkInSummary = await getCheckInSummary(id);
 
 			await msg.reply(
 				`**${tournament.name}** Status\n` +
-				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**`
+				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**` +
+				checkInSummary
 			);
 			return;
 		}
