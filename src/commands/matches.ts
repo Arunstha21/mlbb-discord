@@ -151,7 +151,7 @@ const command: CommandDefinition = {
 				const schedule = scheduleMap.get(match.matchId);
 				const threadLink = schedule?.threadId ? ` [<#${schedule.threadId}>]` : "";
 
-				roundBlock += `  \`Match ${match.matchId}\` **${p1}** vs **${p2}** - ${statusEmoji} ${statusText}${threadLink}\n`;
+				roundBlock += `  \`Match ${match.matchId}\` **${p1}** vs **${p2}** - ${statusEmoji} ${statusText}\n${threadLink}\n`;
 			}
 			roundBlock += "\n";
 

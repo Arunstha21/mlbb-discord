@@ -44,13 +44,8 @@ const command: CommandDefinition = {
 			return;
 		}
 
-		// Block if all tournaments have check-in disabled
-		if (tournaments.every(t => t.checkInDisabled)) {
-			await msg.reply("❌ Check in is already closed. Please contact the Tournament Organizer for assistance.");
-			return;
-		}
-
 		const tournamentIds = tournaments.map(t => t.tournamentId);
+		const tournamentMap = new Map(tournaments.map(t => [t.tournamentId, t]));
 
 		// Find unverified enrolled players
 		const players = await EnrolledPlayer.find({
@@ -59,6 +54,15 @@ const command: CommandDefinition = {
 		});
 
 		const guildPlayers = players.filter(p => tournamentIds.includes(p.tournamentId));
+
+		// Block if all tournaments the player is enrolled in have check-in disabled
+		if (guildPlayers.length > 0 && guildPlayers.every(p => {
+			const tournament = tournamentMap.get(p.tournamentId);
+			return tournament?.checkInDisabled === true;
+		})) {
+			await msg.reply("❌ Check in is already closed. Please contact the Tournament Organizer for assistance.");
+			return;
+		}
 
 		if (guildPlayers.length === 0) {
 			const embed = new EmbedBuilder()

@@ -48,13 +48,8 @@ const command: CommandDefinition = {
 			return;
 		}
 
-		// Block if all tournaments have check-in disabled
-		if (tournaments.every(t => t.checkInDisabled)) {
-			await msg.reply("❌ Check in is already closed. Please contact the Tournament Organizer for assistance.");
-			return;
-		}
-
 		const tournamentIds = tournaments.map(t => t.tournamentId);
+		const tournamentMap = new Map(tournaments.map(t => [t.tournamentId, t]));
 
 		// Find enrolled players with this email in any tournament of this server (case-insensitive)
 		let players = await EnrolledPlayer.createQueryBuilder("player")
@@ -62,6 +57,15 @@ const command: CommandDefinition = {
 			.getMany();
 
 		players = players.filter(p => tournamentIds.includes(p.tournamentId));
+
+		// Block if all tournaments the player is enrolled in have check-in disabled
+		if (players.length > 0 && players.every(p => {
+			const tournament = tournamentMap.get(p.tournamentId);
+			return tournament?.checkInDisabled === true;
+		})) {
+			await msg.reply("❌ Check in is already closed. Please contact the Tournament Organizer for assistance.");
+			return;
+		}
 
 		if (players.length === 0) {
 			const embed = new EmbedBuilder()

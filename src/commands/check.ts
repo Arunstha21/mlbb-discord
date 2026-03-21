@@ -76,6 +76,12 @@ const command: CommandDefinition = {
 				matchedPlayer.tournament = tournament;
 			}
 
+			// Block if this player's tournament has check-in disabled
+			if (matchedPlayer.tournament.checkInDisabled) {
+				await msg.reply("❌ Check in is already closed. Please contact the Tournament Organizer for assistance.");
+				return;
+			}
+
 			if (matchedPlayer.verified) {
 				// Check if user has the participant role
 				const hasRole = member?.roles.cache.some(role =>
