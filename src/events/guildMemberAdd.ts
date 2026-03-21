@@ -32,6 +32,12 @@ export function makeHandler(_support: CommandSupport) {
 			// Then, find all enrolled players for those tournaments
 			const tournamentIds = tournaments.map(t => t.tournamentId);
 
+			// Block if all tournaments have check-in disabled
+			if (tournaments.length > 0 && tournaments.every(t => t.checkInDisabled)) {
+				logger.info(`Verification disabled for guild ${member.guild.id}, skipping member join logic for ${member.user.tag}`);
+				return;
+			}
+
 			let enrolledPlayers: EnrolledPlayer[] = [];
 			if (tournamentIds.length > 0) {
 				for (const tournamentId of tournamentIds) {

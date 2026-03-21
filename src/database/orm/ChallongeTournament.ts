@@ -71,6 +71,10 @@ export class ChallongeTournament extends BaseEntity {
 	@Column({ nullable: true })
 	activeRound?: number;
 
+	/// When true, all check-in and verification commands (!check-in, !email, !verify) are blocked.
+	@Column({ default: false })
+	checkInDisabled!: boolean;
+
 	/// The ORM relationship for all participants, pending and confirmed.
 	@OneToMany(() => Participant, participant => participant.tournament, { cascade: true, onDelete: "CASCADE" })
 	participants!: Participant[];

@@ -44,6 +44,12 @@ const command: CommandDefinition = {
 			return;
 		}
 
+		// Block if all tournaments have check-in disabled
+		if (tournaments.every(t => t.checkInDisabled)) {
+			await msg.reply("❌ Check in is already closed. Please contact the Tournament Organizer for assistance.");
+			return;
+		}
+
 		const tournamentIds = tournaments.map(t => t.tournamentId);
 
 		// Find unverified enrolled players

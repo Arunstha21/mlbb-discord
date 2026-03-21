@@ -76,6 +76,7 @@ router.get("/api/tournaments", async (req: Request, res: Response) => {
 					participantCount: 0,
 					verifiedCount,
 					unverifiedCount,
+					checkInDisabled: t.checkInDisabled,
 				};
 			})
 		);
@@ -154,6 +155,7 @@ router.get("/api/tournaments/:id", async (req: Request, res: Response) => {
 				verifiedCount,
 				unverifiedCount,
 				scheduledCount,
+				checkInDisabled: tournament.checkInDisabled,
 			}
 		});
 	} catch (error) {
@@ -243,6 +245,42 @@ router.delete("/api/tournaments/:id", async (req: Request, res: Response) => {
 	} catch (error) {
 		logger.error("Failed to delete tournament:", error);
 		res.status(500).json({ success: false, error: "Failed to delete tournament" });
+	}
+});
+
+// API: Toggle check-in for all tournaments
+router.post("/api/tournaments/toggle-all-checkin", async (req: Request, res: Response) => {
+	try {
+		const { disabled } = req.body;
+		if (typeof disabled !== "boolean") {
+			return res.status(400).json({ success: false, error: "Missing required field: disabled (boolean)" });
+		}
+		const tournaments = await ChallongeTournament.find();
+		for (const t of tournaments) {
+			t.checkInDisabled = disabled;
+			await t.save();
+		}
+		res.json({ success: true, disabled, count: tournaments.length });
+	} catch (error) {
+		logger.error("Failed to toggle all check-ins:", error);
+		res.status(500).json({ success: false, error: "Failed to toggle all check-ins" });
+	}
+});
+
+// API: Toggle check-in for a specific tournament
+router.post("/api/tournaments/:id/toggle-checkin", async (req: Request, res: Response) => {
+	try {
+		const id = getIdParam(req.params);
+		const tournament = await ChallongeTournament.findOne({ where: { tournamentId: id } });
+		if (!tournament) {
+			return res.status(404).json({ success: false, error: "Tournament not found" });
+		}
+		tournament.checkInDisabled = !tournament.checkInDisabled;
+		await tournament.save();
+		res.json({ success: true, checkInDisabled: tournament.checkInDisabled });
+	} catch (error) {
+		logger.error("Failed to toggle check-in:", error);
+		res.status(500).json({ success: false, error: "Failed to toggle check-in" });
 	}
 });
 

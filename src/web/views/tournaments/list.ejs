@@ -1,7 +1,10 @@
 <div class="tournaments-page">
 	<div class="page-header">
 		<h2 class="page-title">Tournaments</h2>
-		<button class="btn btn-primary" onclick="showCreateModal()">+ Create Tournament</button>
+		<div style="display: flex; gap: 10px; align-items: center;">
+			<button class="btn btn-warning" id="btn-disable-all-checkin" onclick="toggleAllCheckIn()">🔒 Disable All Check-in</button>
+			<button class="btn btn-primary" onclick="showCreateModal()">+ Create Tournament</button>
+		</div>
 	</div>
 
 	<div class="filters">
@@ -260,6 +263,7 @@ function renderTournaments() {
 				<div class="action-buttons">
 					<button class="btn btn-sm btn-primary" onclick="syncTournament('${t.id}', '${escapeHtml(t.name)}')">Sync</button>
 					<a href="/tournaments/${t.id}" class="btn btn-sm btn-secondary">View</a>
+					<button class="btn btn-sm ${t.checkInDisabled ? 'btn-success' : 'btn-warning'}" onclick="toggleCheckIn('${t.id}')">${t.checkInDisabled ? '🔓 Enable' : '🔒 Disable'} Check-in</button>
 					<button class="btn btn-sm btn-danger" onclick="deleteTournament('${t.id}')">Delete</button>
 				</div>
 			</td>
@@ -349,6 +353,40 @@ async function syncTournament(id, name) {
 		console.error('Failed to sync tournament:', error);
 		Dot.Toast.error(`Failed to sync tournament "${name}"`);
 	}
+}
+
+// Toggle check-in for a specific tournament
+async function toggleCheckIn(id) {
+	try {
+		const result = await Dot.API.post(`/api/tournaments/${id}/toggle-checkin`);
+		const disabled = result.checkInDisabled;
+		Dot.Toast.success(`Check-in ${disabled ? 'disabled' : 'enabled'} for tournament.`);
+		loadTournaments();
+	} catch (error) {
+		Dot.Toast.error('Failed to toggle check-in.');
+	}
+}
+
+// Toggle check-in for ALL tournaments
+async function toggleAllCheckIn() {
+	// Determine the target state: if any are currently enabled, disable all; otherwise enable all
+	const anyEnabled = tournaments.some(t => !t.checkInDisabled);
+	const disabled = anyEnabled;
+	const label = disabled ? 'disable' : 'enable';
+
+	Dot.Modal.confirm(
+		`${disabled ? 'Disable' : 'Enable'} All Check-ins`,
+		`Are you sure you want to ${label} check-in for ALL tournaments?`,
+		async () => {
+			try {
+				const result = await Dot.API.post('/api/tournaments/toggle-all-checkin', { disabled });
+				Dot.Toast.success(`Check-in ${disabled ? 'disabled' : 'enabled'} for ${result.count} tournament(s).`);
+				loadTournaments();
+			} catch (error) {
+				Dot.Toast.error('Failed to toggle all check-ins.');
+			}
+		}
+	);
 }
 
 // Delete tournament
