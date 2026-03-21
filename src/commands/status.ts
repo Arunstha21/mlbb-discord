@@ -62,9 +62,52 @@ const command: CommandDefinition = {
 	requiredArgs: [],
 	optionalArgs: ["id", "newStatus"],
 	executor: async (msg, args, support) => {
-		// If no args, show current status with check-in summary
+		// Handle Discord autocomplete weirdness - if we got 1 arg with a space, split it
+		if (args.length === 1 && args[0].includes(" ")) {
+			args = args[0].split(/\s+/);
+		}
+
+		// Determine if we're viewing or changing status
+		let id: string;
+		let newStatusString: string | undefined;
+
 		if (args.length === 0) {
-			const id = await resolveTournamentId(undefined, msg.guildId);
+			// No args - view current tournament status
+			id = await resolveTournamentId(undefined, msg.guildId);
+		} else if (args.length === 1) {
+			// One arg - could be tournament ID or status
+			const possibleStatuses = ["preparing", "in", "progress", "ipr", "complete"];
+			const firstArgLower = args[0].toLowerCase();
+
+			if (possibleStatuses.includes(firstArgLower)) {
+				// First arg is a status, no id provided
+				id = await resolveTournamentId(undefined, msg.guildId);
+				newStatusString = args[0];
+			} else {
+				// First arg is tournament ID - viewing status
+				id = await resolveTournamentId(args[0], msg.guildId);
+			}
+		} else {
+			// 2+ args: treat as [id] <newStatus>
+			const possibleStatuses = ["preparing", "in", "progress", "ipr", "complete"];
+			const firstArgLower = args[0].toLowerCase();
+
+			if (possibleStatuses.includes(firstArgLower)) {
+				// First arg is a status, no id provided
+				id = await resolveTournamentId(undefined, msg.guildId);
+				newStatusString = args.join(" ");
+			} else {
+				// First arg is id, rest is status
+				id = await resolveTournamentId(args[0], msg.guildId);
+				newStatusString = args.slice(1).join(" ");
+			}
+		}
+
+		// Authenticate as host - required for all status operations
+		await support.database.authenticateHost(id, msg.author.id, msg.guildId, undefined, isTournamentHost(msg.member, id));
+
+		// If no new status, show current status with check-in summary
+		if (!newStatusString) {
 			const tournament = await support.database.getTournament(id);
 			const checkInSummary = await getCheckInSummary(id);
 
@@ -76,49 +119,6 @@ const command: CommandDefinition = {
 				`Available statuses: \`preparing\`, \`in progress\`, \`complete\``
 			);
 			return;
-		}
-
-		// Handle Discord autocomplete weirdness - if we got 1 arg with a space, split it
-		if (args.length === 1 && args[0].includes(" ")) {
-			args = args[0].split(/\s+/);
-		}
-
-		// If only 1 arg, show status for that tournament with check-in summary
-		if (args.length === 1) {
-			const id = await resolveTournamentId(args[0], msg.guildId);
-			const tournament = await support.database.getTournament(id);
-			const checkInSummary = await getCheckInSummary(id);
-
-			await msg.reply(
-				`**${tournament.name}** Status\n` +
-				`Current Status: ${statusEmoji[tournament.status]} **${tournament.status}**` +
-				checkInSummary
-			);
-			return;
-		}
-
-		// 2+ args: treat as [id] <newStatus>
-		let providedId: string | undefined;
-		let newStatusString: string;
-
-		if (args.length === 2) {
-			// Could be [id, status] or just [status] if id is omitted
-			// Check if first arg looks like a status
-			const possibleStatuses = ["preparing", "in", "progress", "ipr", "complete"];
-			const firstArgLower = args[0].toLowerCase();
-
-			if (possibleStatuses.includes(firstArgLower) || firstArgLower === "in") {
-				// First arg is a status, no id provided
-				newStatusString = args.join(" "); // Join in case it's "in progress"
-			} else {
-				// First arg is id, second is status
-				providedId = args[0];
-				newStatusString = args[1];
-			}
-		} else {
-			// More than 2 args - assume first is id, rest is status
-			providedId = args[0];
-			newStatusString = args.slice(1).join(" ");
 		}
 
 		// Parse the new status
@@ -142,11 +142,6 @@ const command: CommandDefinition = {
 			);
 			return;
 		}
-
-		const id = await resolveTournamentId(providedId, msg.guildId);
-
-		// Authenticate as host
-		await support.database.authenticateHost(id, msg.author.id, msg.guildId, undefined, isTournamentHost(msg.member, id));
 
 		// Update the status
 		const tournament = await ChallongeTournament.findOne({ where: { tournamentId: id } });
