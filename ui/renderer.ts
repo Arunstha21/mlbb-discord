@@ -14,6 +14,7 @@ interface BotConfig {
   web: {
     port: number;
     autoIncrement: boolean;
+    password?: string;
   };
   logging: { webhook?: string; level: string };
 }
@@ -172,6 +173,8 @@ function populateConfigForm(config: BotConfig): void {
   (document.getElementById('challonge-token') as HTMLInputElement).value = config.challonge.token;
   (document.getElementById('bot-prefix') as HTMLInputElement).value = config.bot.defaultPrefix;
   (document.getElementById('bot-to-role') as HTMLInputElement).value = config.bot.defaultToRole;
+  (document.getElementById('web-port') as HTMLInputElement).value = config.web.port.toString();
+  (document.getElementById('web-password') as HTMLInputElement).value = config.web.password || '';
 }
 
 function restoreFormFromStorage(): void {
@@ -245,7 +248,11 @@ function handleConfigSubmit(e: Event): void {
       defaultToRole: (document.getElementById('bot-to-role') as HTMLInputElement).value
     },
     database: { type: 'sqlite', path: 'C:/mlbb-data/database/dot.db' },
-    web: { port: 3000, autoIncrement: true },
+    web: {
+      port: parseInt((document.getElementById('web-port') as HTMLInputElement).value) || 3000,
+      autoIncrement: true,
+      password: (document.getElementById('web-password') as HTMLInputElement).value || undefined
+    },
     logging: { level: 'info' }
   };
 

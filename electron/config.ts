@@ -19,6 +19,7 @@ export interface BotConfig {
   web: {
     port: number;
     autoIncrement: boolean;
+    password?: string;
   };
   logging: {
     webhook?: string;
@@ -76,6 +77,7 @@ export function configToEnv(config: BotConfig): NodeJS.ProcessEnv {
     SQLITE_DB: config.database.path || 'C:/mlbb-data/database/dot.db',
     POSTGRESQL_URL: config.database.url || '',
     WEB_PORT: config.web.port.toString(),
+    WEB_PASSWORD: config.web.password || '',
     DOT_LOGGER_WEBHOOK: config.logging.webhook || '',
     DEBUG: process.env.DEBUG || 'dot:*',
     NODE_ENV: 'production'

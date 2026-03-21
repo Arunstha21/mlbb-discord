@@ -65,6 +65,12 @@ export function createWebServer() {
 			return next();
 		}
 
+		// Skip auth for localhost requests (Electron app)
+		const clientIp = req.ip || req.socket.remoteAddress || "";
+		if (clientIp === "::1" || clientIp === "127.0.0.1" || clientIp === "::ffff:127.0.0.1") {
+			return next();
+		}
+
 		// Check if authenticated
 		if (req.session.authenticated) {
 			return next();
