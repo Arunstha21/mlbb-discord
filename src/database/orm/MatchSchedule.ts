@@ -35,6 +35,10 @@ export class MatchSchedule extends BaseEntity {
 	@Column({ type: "varchar", nullable: true, length: 20 })
 	threadId!: string | null;
 
+	/// Discord channel ID where the thread was created
+	@Column({ type: "varchar", nullable: true, length: 20 })
+	channelId!: string | null;
+
 	/// The associated tournament
 	@ManyToOne(() => ChallongeTournament, { onDelete: "CASCADE" })
 	@JoinColumn({ name: "tournamentId" })

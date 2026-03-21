@@ -305,8 +305,9 @@ router.post("/api/tournaments/:id/rounds/:round/start", async (req: Request, res
 					`${playerMentionsText}\n\nGood luck!`
 				);
 
-				// Save thread ID to schedule
+				// Save thread ID and channel ID to schedule
 				schedule.threadId = thread.id;
+				schedule.channelId = thread.parentId;
 				await schedule.save();
 
 				createdCount++;

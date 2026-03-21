@@ -18,27 +18,19 @@
 	<!-- Info Section -->
 	<div class="info-grid">
 		<div class="info-card">
-			<div class="info-label">Challonge ID</div>
-			<div class="info-value" id="t-challonge-id">&mdash;</div>
-		</div>
-		<div class="info-card">
 			<div class="info-label">Discord Server ID</div>
 			<div class="info-value" id="t-server">&mdash;</div>
-		</div>
-		<div class="info-card">
-			<div class="info-label">Participant Role</div>
-			<div class="info-value" id="t-role">&mdash;</div>
 		</div>
 		<div class="info-card">
 			<div class="info-label">Capacity</div>
 			<div class="info-value" id="t-capacity">&mdash;</div>
 		</div>
 		<div class="info-card">
-			<div class="info-label">Verified Players</div>
+			<div class="info-label">Verified Teams</div>
 			<div class="info-value" id="t-verified-count" style="color: var(--success);">&mdash;</div>
 		</div>
 		<div class="info-card">
-			<div class="info-label">Unverified Players</div>
+			<div class="info-label">Unverified Teams</div>
 			<div class="info-value" id="t-unverified-count" style="color: var(--warning);">&mdash;</div>
 		</div>
 	</div>
@@ -124,7 +116,7 @@
 					</tr>
 				</thead>
 				<tbody id="schedules-body">
-					<tr><td colspan="6" class="loading-row"><div class="spinner"></div> Loading schedules...</td></tr>
+					<tr><td colspan="7" class="loading-row"><div class="spinner"></div> Loading schedules...</td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -991,14 +983,12 @@ function renderInfo(t) {
 	const status = t.status || 'unknown';
 	statusEl.textContent = status;
 	statusEl.className = `badge badge-${getStatusBadgeClass(status)}`;
-	
+
 	document.getElementById('t-format').textContent = t.format || 'Unknown Format';
-	
+
 	// Info Cards
-	document.getElementById('t-challonge-id').textContent = t.challongeId || '—';
 	document.getElementById('t-server').textContent = t.server || '—';
-	document.getElementById('t-role').textContent = t.participantRoleName || '—';
-	
+
 	const cap = t.participantLimit ? `${t.enrolledCount || 0} / ${t.participantLimit}` : `${t.enrolledCount || 0} / ∞`;
 	document.getElementById('t-capacity').textContent = cap;
 
@@ -1043,7 +1033,7 @@ function renderSchedules(schedules) {
 	const tbody = document.getElementById('schedules-body');
 	
 	if (!schedules.length) {
-		tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No matches scheduled</div></td></tr>`;
+		tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-state-text">No matches scheduled</div></td></tr>`;
 		return;
 	}
 
@@ -1595,7 +1585,7 @@ renderSchedules = function(schedules) {
 	const tbody = document.getElementById('schedules-body');
 
 	if (!schedules.length) {
-		tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No matches scheduled</div></td></tr>`;
+		tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-state-text">No matches scheduled</div></td></tr>`;
 		return;
 	}
 
@@ -1610,6 +1600,13 @@ renderSchedules = function(schedules) {
 			? '<span class="text-success">Yes</span>'
 			: '<span class="text-secondary">No</span>';
 
+		// Build thread link button (only if thread exists)
+		const threadLinkBtn = s.threadId && s.channelId && s.guildId
+			? `<button class="action-btn" onclick="window.open('https://discord.com/channels/${s.guildId}/${s.channelId}/${s.threadId}', '_blank')" title="Open Thread">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+			</button>`
+			: '';
+
 		return `
 			<tr>
 				<td><strong>#${s.matchId}</strong></td>
@@ -1619,6 +1616,7 @@ renderSchedules = function(schedules) {
 				<td>${s.threadId || '<span style="color:var(--text-secondary)">—</span>'}</td>
 				<td>${notifiedDisplay}</td>
 				<td class="actions-col">
+					${threadLinkBtn}
 					<button class="action-btn edit" onclick='openScheduleModal(${JSON.stringify(s)})' title="Edit">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
 					</button>

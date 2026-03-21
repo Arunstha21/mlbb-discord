@@ -34,15 +34,36 @@ router.get("/api/tournaments", async (req: Request, res: Response) => {
 	try {
 		const tournaments = await ChallongeTournament.find();
 
-		// Get verification counts for each tournament
+		// Get verification counts for each tournament (count teams, not players)
 		const tournamentData = await Promise.all(
 			tournaments.map(async (t: ChallongeTournament) => {
-				const verifiedCount = await EnrolledPlayer.count({
-					where: { tournamentId: t.tournamentId, verified: true }
+				// Get all players for this tournament
+				const players = await EnrolledPlayer.find({
+					where: { tournamentId: t.tournamentId },
+					select: ["team", "verified"]
 				});
-				const unverifiedCount = await EnrolledPlayer.count({
-					where: { tournamentId: t.tournamentId, verified: false }
-				});
+
+				// Group by team and determine verification status
+				const teamMap = new Map<string, boolean>();
+				for (const player of players) {
+					const existing = teamMap.get(player.team);
+					// Team is verified if at least 1 player is verified
+					if (existing === undefined || !existing) {
+						teamMap.set(player.team, player.verified);
+					}
+				}
+
+				// Count verified and unverified teams
+				let verifiedCount = 0;
+				let unverifiedCount = 0;
+				for (const [, isVerified] of teamMap) {
+					if (isVerified) {
+						verifiedCount++;
+					} else {
+						unverifiedCount++;
+					}
+				}
+
 				return {
 					id: t.tournamentId,
 					challongeId: t.challongeTournamentId,
@@ -86,15 +107,30 @@ router.get("/api/tournaments/:id", async (req: Request, res: Response) => {
 			where: { tournamentId: id }
 		});
 
-		// Get verified players count
-		const verifiedCount = await EnrolledPlayer.count({
-			where: { tournamentId: id, verified: true }
+		// Get team verification counts (team is verified if at least 1 player is verified)
+		const players = await EnrolledPlayer.find({
+			where: { tournamentId: id },
+			select: ["team", "verified"]
 		});
 
-		// Get unverified players count
-		const unverifiedCount = await EnrolledPlayer.count({
-			where: { tournamentId: id, verified: false }
-		});
+		const teamMap = new Map<string, boolean>();
+		for (const player of players) {
+			const existing = teamMap.get(player.team);
+			// Team is verified if at least 1 player is verified
+			if (existing === undefined || !existing) {
+				teamMap.set(player.team, player.verified);
+			}
+		}
+
+		let verifiedCount = 0;
+		let unverifiedCount = 0;
+		for (const [, isVerified] of teamMap) {
+			if (isVerified) {
+				verifiedCount++;
+			} else {
+				unverifiedCount++;
+			}
+		}
 
 		// Get scheduled matches count
 		const scheduledCount = await MatchSchedule.count({

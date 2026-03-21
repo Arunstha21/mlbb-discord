@@ -90,6 +90,8 @@ router.get("/api/tournaments/:id/schedules", async (req: Request, res: Response)
 					player2Name: player2Name ?? DEFAULT_PLAYER_NAME,
 					notified: s.notified,
 					threadId: s.threadId,
+					channelId: s.channelId,
+					guildId: tournament.owningDiscordServer,
 				};
 			})
 		});
