@@ -147,7 +147,11 @@ const command: CommandDefinition = {
 					complete: "Completed"
 				}[match.state];
 
-				roundBlock += `  \`Match ${match.matchId}\` **${p1}** vs **${p2}** - ${statusEmoji} ${statusText}\n`;
+				// Add thread link if exists
+				const schedule = scheduleMap.get(match.matchId);
+				const threadLink = schedule?.threadId ? ` [<#${schedule.threadId}>]` : "";
+
+				roundBlock += `  \`Match ${match.matchId}\` **${p1}** vs **${p2}** - ${statusEmoji} ${statusText}${threadLink}\n`;
 			}
 			roundBlock += "\n";
 

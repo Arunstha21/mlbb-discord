@@ -696,6 +696,17 @@ captain3@example.com,Bob Wilson,Team Gamma,</pre>
 	height: 14px;
 }
 
+.thread-link {
+	color: var(--accent);
+	text-decoration: none;
+	font-family: monospace;
+	font-size: 12px;
+}
+
+.thread-link:hover {
+	text-decoration: underline;
+}
+
 
 /* Modal Overrides */
 .modal-large {
@@ -1600,12 +1611,10 @@ renderSchedules = function(schedules) {
 			? '<span class="text-success">Yes</span>'
 			: '<span class="text-secondary">No</span>';
 
-		// Build thread link button (only if thread exists)
-		const threadLinkBtn = s.threadId && s.channelId && s.guildId
-			? `<button class="action-btn" onclick="window.open('https://discord.com/channels/${s.guildId}/${s.channelId}/${s.threadId}', '_blank')" title="Open Thread">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-			</button>`
-			: '';
+		// Build thread link (only if thread exists)
+		const threadCell = s.threadId && s.guildId
+			? `<a href="https://discord.com/channels/${s.guildId}/${s.threadId}" target="_blank" class="thread-link">${s.threadId}</a>`
+			: '<span style="color:var(--text-secondary)">—</span>';
 
 		return `
 			<tr>
@@ -1613,10 +1622,9 @@ renderSchedules = function(schedules) {
 				<td>Round ${s.round || '?'}</td>
 				<td>${teams}</td>
 				<td>${formattedDate}</td>
-				<td>${s.threadId || '<span style="color:var(--text-secondary)">—</span>'}</td>
+				<td>${threadCell}</td>
 				<td>${notifiedDisplay}</td>
 				<td class="actions-col">
-					${threadLinkBtn}
 					<button class="action-btn edit" onclick='openScheduleModal(${JSON.stringify(s)})' title="Edit">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
 					</button>
