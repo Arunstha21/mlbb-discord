@@ -55,9 +55,7 @@ export function makeHandler(_support: CommandSupport) {
 			if (member.displayName) matchForms.push(member.displayName.toLowerCase());
 
 			const matchedPlayer = enrolledPlayers.find(
-				p =>
-					(p.discordUsername && matchForms.includes(p.discordUsername.toLowerCase())) ||
-					(p.name && matchForms.includes(p.name.toLowerCase()))
+				p => p.discordUsername && matchForms.includes(p.discordUsername.toLowerCase())
 			);
 
 			if (matchedPlayer) {
