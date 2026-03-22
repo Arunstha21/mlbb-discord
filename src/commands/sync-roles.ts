@@ -1,4 +1,4 @@
-import { EmbedBuilder, Guild } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { EnrolledPlayer } from "../database/orm/EnrolledPlayer";
 import { ChallongeTournament } from "../database/orm/ChallongeTournament";
@@ -6,6 +6,7 @@ import { getLogger } from "../util/logger";
 import { isTournamentHost } from "../util/discord";
 import { assignParticipantRole, getParticipantRoleName } from "../util";
 import { resolveTournamentId } from "../util/tournament";
+import { addUserToMatchThreads } from "../util/matchThreads";
 
 const logger = getLogger("command:sync-roles");
 
@@ -95,6 +96,7 @@ const command: CommandDefinition = {
 
 			let totalSuccess = 0;
 			let totalFailed = 0;
+			let totalThreadsAdded = 0;
 			const failures: string[] = [];
 
 			// Group players by guild and tournament
@@ -160,6 +162,17 @@ const command: CommandDefinition = {
 								failures.push(`${player.name} - Failed to assign role`);
 							}
 						}
+
+						// Add user to match threads if they were missed
+						try {
+							const threadsAdded = await addUserToMatchThreads(guild, player, support.challonge);
+							if (threadsAdded > 0) {
+								totalThreadsAdded += threadsAdded;
+								logger.info(`Added ${player.name} to ${threadsAdded} match thread(s)`);
+							}
+						} catch (err) {
+							logger.error(`Failed to add ${player.name} to match threads:`, err);
+						}
 					} catch (err) {
 						logger.error(`Error processing player ${player.name}:`, err);
 						totalFailed++;
@@ -173,10 +186,11 @@ const command: CommandDefinition = {
 
 			// Build results embed
 			const embed = new EmbedBuilder()
-				.setTitle("Role Sync Complete")
-				.setColor(totalSuccess > 0 ? 0x00ff00 : 0xff0000)
+				.setTitle("Role & Thread Sync Complete")
+				.setColor(totalSuccess > 0 || totalThreadsAdded > 0 ? 0x00ff00 : 0xff0000)
 				.addFields(
-					{ name: "✅ Success", value: totalSuccess.toString(), inline: true },
+					{ name: "✅ Roles Synced", value: totalSuccess.toString(), inline: true },
+					{ name: "🧵 Threads Added", value: totalThreadsAdded.toString(), inline: true },
 					{ name: "❌ Failed", value: totalFailed.toString(), inline: true }
 				);
 

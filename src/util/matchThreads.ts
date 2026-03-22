@@ -4,6 +4,9 @@ import { EnrolledPlayer } from "../database/orm/EnrolledPlayer";
 import { ChallongeTournament } from "../database/orm/ChallongeTournament";
 import { Not, IsNull } from "typeorm";
 import { WebsitePlayer, WebsiteWrapperChallonge } from "../website/challonge";
+import { getLogger } from "./logger";
+
+const logger = getLogger("matchThreads");
 
 /**
  * Adds a newly verified user to existing match threads for their matches.
@@ -21,12 +24,14 @@ export async function addUserToMatchThreads(
 	challongeService: WebsiteWrapperChallonge
 ): Promise<number> {
 	if (!player.discordId) {
+		logger.warn(`Cannot add to threads: player ${player.name} has no discordId`);
 		return 0;
 	}
 
 	try {
 		const member = await guild.members.fetch(player.discordId).catch(() => null);
 		if (!member) {
+			logger.warn(`Cannot add to threads: member ${player.discordId} not found in guild`);
 			return 0;
 		}
 
@@ -36,11 +41,13 @@ export async function addUserToMatchThreads(
 		});
 
 		if (!tournament) {
+			logger.warn(`Cannot add to threads: tournament ${player.tournamentId} not found`);
 			return 0;
 		}
 
 		// If no round is active, don't add user to any threads
 		if (tournament.activeRound === null || tournament.activeRound === undefined) {
+			logger.info(`No active round for tournament ${player.tournamentId}, skipping thread add for ${player.name}`);
 			return 0;
 		}
 
@@ -54,6 +61,7 @@ export async function addUserToMatchThreads(
 		});
 
 		if (schedules.length === 0) {
+			logger.info(`No match schedules with threads found for tournament ${player.tournamentId} round ${tournament.activeRound}`);
 			return 0;
 		}
 
@@ -61,13 +69,30 @@ export async function addUserToMatchThreads(
 		const allMatches = await challongeService.getMatches(tournament.challongeTournamentId, false);
 		const allPlayers = await challongeService.getPlayers(tournament.challongeTournamentId);
 
-		// Find the player's Challonge ID by name or team
-		const playerChallonge = allPlayers.find((p: WebsitePlayer) => {
-			// Match by player name first, then by team name
-			return p.name === player.name || (player.team && p.name === player.team);
-		});
+		// Find the player's Challonge ID - prefer stored challongeId, fallback to name matching
+		let playerChallonge: WebsitePlayer | undefined;
+
+		// First try to match by stored challongeId (most reliable)
+		if (player.challongeId) {
+			playerChallonge = allPlayers.find(p => p.challongeId === player.challongeId);
+			if (playerChallonge) {
+				logger.verbose(`Found player ${player.name} by stored challongeId: ${player.challongeId}`);
+			}
+		}
+
+		// Fallback to name/team matching if no challongeId or not found
+		if (!playerChallonge) {
+			playerChallonge = allPlayers.find((p: WebsitePlayer) => {
+				// Match by player name first, then by team name
+				return p.name === player.name || (player.team && p.name === player.team);
+			});
+			if (playerChallonge) {
+				logger.verbose(`Found player ${player.name} by name/team matching`);
+			}
+		}
 
 		if (!playerChallonge) {
+			logger.warn(`Could not find player ${player.name} (team: ${player.team}, challongeId: ${player.challongeId}) in Challonge participants. Available names: ${allPlayers.map(p => p.name).join(", ")}`);
 			return 0;
 		}
 
@@ -79,6 +104,8 @@ export async function addUserToMatchThreads(
 		// Find schedules with threads for these matches
 		const relevantSchedules = schedules.filter(s => playerMatchIds.includes(s.matchId));
 
+		logger.info(`Found ${relevantSchedules.length} relevant threads for player ${player.name} (matchIds: ${playerMatchIds.join(",")})`);
+
 		let addedCount = 0;
 		for (const schedule of relevantSchedules) {
 			if (!schedule.threadId) continue;
@@ -87,11 +114,13 @@ export async function addUserToMatchThreads(
 				// Fetch the thread
 				const thread = await guild.channels.fetch(schedule.threadId).catch(() => null);
 				if (!thread || !(thread instanceof ThreadChannel)) {
+					logger.warn(`Thread ${schedule.threadId} not found or not a thread`);
 					continue;
 				}
 
 				// Check if user is already a member of the thread
 				if (thread.members.cache.has(member.id)) {
+					logger.verbose(`User ${member.id} already in thread ${thread.name}`);
 					continue;
 				}
 
@@ -101,17 +130,18 @@ export async function addUserToMatchThreads(
 				// Send a mention message so the user gets notified
 				await thread.send(`👋 <@${member.id}> has been verified for **${player.team || player.name}** and added to this match thread (Round ${tournament.activeRound}).`);
 
+				logger.info(`Added ${player.name} to thread ${thread.name}`);
 				addedCount++;
 
-			} catch {
-				// Silently skip errors for individual threads
+			} catch (err) {
+				logger.error(`Failed to add ${player.name} to thread ${schedule.threadId}:`, err);
 			}
 		}
 
 		return addedCount;
 
-	} catch {
-		// Silently return 0 on any error
+	} catch (err) {
+		logger.error(`Error in addUserToMatchThreads for ${player.name}:`, err);
 		return 0;
 	}
 }
