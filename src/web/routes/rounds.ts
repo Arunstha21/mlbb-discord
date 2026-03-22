@@ -318,6 +318,11 @@ router.post("/api/tournaments/:id/rounds/:round/start", async (req: Request, res
 			}
 		}
 
+		// Set this round as the active round for the tournament
+		tournament.activeRound = roundNumber;
+		await tournament.save();
+		logger.info(`Set active round to ${roundNumber} for tournament ${tournamentId}`);
+
 		res.json({
 			success: true,
 			data: {
