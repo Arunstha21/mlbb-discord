@@ -118,6 +118,9 @@ export async function addUserToMatchThreads(
 					continue;
 				}
 
+				// Fetch thread members to ensure cache is populated
+				await thread.members.fetch();
+
 				// Check if user is already a member of the thread
 				if (thread.members.cache.has(member.id)) {
 					logger.verbose(`User ${member.id} already in thread ${thread.name}`);
