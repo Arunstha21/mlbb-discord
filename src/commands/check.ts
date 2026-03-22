@@ -11,6 +11,7 @@ import { EnrolledPlayer } from "../database/orm/EnrolledPlayer";
 import { ChallongeTournament } from "../database/orm/ChallongeTournament";
 import { getLogger } from "../util/logger";
 import { isTournamentOrganizer, assignParticipantRole, getParticipantRoleName, TO_COMMAND_BLOCKED, TICKETS_CATEGORY_NAME, TICKET_CHANNEL_PREFIX } from "../util";
+import { addUserToMatchThreads } from "../util/matchThreads";
 
 const logger = getLogger("command:check");
 
@@ -91,9 +92,18 @@ const command: CommandDefinition = {
 				if (!hasRole && member) {
 					const roleAssigned = await assignParticipantRole(member, matchedPlayer.tournament, logger, support.participantRole);
 					if (roleAssigned) {
+						// Also try to add to match threads in case they were missed
+						if (msg.guild) {
+							await addUserToMatchThreads(msg.guild, matchedPlayer, support.challonge);
+						}
 						await msg.reply(`Welcome back! Your participant role for **${matchedPlayer.tournament.name}** has been restored.`);
 						return;
 					}
+				}
+
+				// Try to add to match threads in case they were missed
+				if (msg.guild) {
+					await addUserToMatchThreads(msg.guild, matchedPlayer, support.challonge);
 				}
 
 				await msg.reply(`You are already verified for the tournament **${matchedPlayer.tournament.name}**.`);
@@ -120,6 +130,14 @@ const command: CommandDefinition = {
 					const roleAssigned = await assignParticipantRole(member, matchedPlayer.tournament, logger, support.participantRole);
 					if (!roleAssigned) {
 						logger.warn(`Failed to assign participant role to ${msg.author.tag} during check command`);
+					}
+				}
+
+				// Add user to existing match threads if verification happened after thread creation
+				if (msg.guild) {
+					const threadsAdded = await addUserToMatchThreads(msg.guild, matchedPlayer, support.challonge);
+					if (threadsAdded > 0) {
+						logger.info(`Added ${msg.author.tag} to ${threadsAdded} match thread(s) via check-in`);
 					}
 				}
 

@@ -12,6 +12,7 @@ import { EnrolledPlayer } from "../database/orm/EnrolledPlayer";
 import { ChallongeTournament } from "../database/orm/ChallongeTournament";
 import { getLogger } from "../util/logger";
 import { assignParticipantRole, TICKETS_CATEGORY_NAME, TICKET_CHANNEL_PREFIX } from "../util";
+import { addUserToMatchThreads } from "../util/matchThreads";
 
 const logger = getLogger("event:guildMemberAdd");
 
@@ -86,6 +87,12 @@ export function makeHandler(_support: CommandSupport) {
 							logger.warn(`Failed to assign participant role to ${member.user.tag} on guild join`);
 						}
 
+						// Add user to existing match threads
+						const threadsAdded = await addUserToMatchThreads(member.guild, matchedPlayer, _support.challonge);
+						if (threadsAdded > 0) {
+							logger.info(`Added ${member.user.tag} to ${threadsAdded} match thread(s) via guild join`);
+						}
+
 						logger.info(`Successfully auto-verified member ${member.user.tag} (Local Check)`);
 					} catch (err) {
 						logger.error(`Error during local auto-verification for ${member.user.tag}:`, err);
@@ -96,6 +103,13 @@ export function makeHandler(_support: CommandSupport) {
 					if (!roleAssigned) {
 						logger.warn(`Failed to assign participant role to already-verified ${member.user.tag} on guild join`);
 					}
+
+					// Also try to add to match threads in case they were missed
+					const threadsAdded = await addUserToMatchThreads(member.guild, matchedPlayer, _support.challonge);
+					if (threadsAdded > 0) {
+						logger.info(`Added ${member.user.tag} to ${threadsAdded} match thread(s) via guild join (already verified)`);
+					}
+
 					logger.info(`Member ${member.user.tag} is already verified, assigned role`);
 				}
 
