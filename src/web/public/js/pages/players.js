@@ -316,7 +316,7 @@
 		}
 
 		// Build CSV content
-		const headers = ['Name', 'Email', 'Team', 'Discord Username', 'Verified', 'Tournament'];
+		const headers = ['Name', 'Email', 'Team', 'Discord Username', 'Discord ID', 'Verified', 'Tournament'];
 		const rows = [headers];
 
 		filteredPlayers.forEach(p => {
@@ -325,6 +325,7 @@
 				escapeCSV(p.email || ''),
 				escapeCSV(p.team || ''),
 				escapeCSV(p.discordUsername || ''),
+				escapeCSV(p.discordId || ''),
 				p.verified ? 'true' : 'false',
 				escapeCSV(p.tournament ? p.tournament.name : '')
 			]);

@@ -37,7 +37,8 @@ const command: CommandDefinition = {
 		const emailIdx = headers.findIndex(h => h.includes("email"));
 		const nameIdx = headers.findIndex(h => h.includes("name"));
 		const teamIdx = headers.findIndex(h => h.includes("team"));
-		const discordUsernameIdx = headers.findIndex(h => h.includes("discord"));
+		const discordUsernameIdx = headers.findIndex(h => h === "discord username" || h === "discordusername" || h === "discord");
+		const discordIdIdx = headers.findIndex(h => h === "discord id" || h === "discordid");
 
 		if (emailIdx === -1 || nameIdx === -1 || teamIdx === -1) {
 			await msg.reply("The CSV header must at least contain 'teamName', 'name' and 'email' columns.");
@@ -63,6 +64,7 @@ const command: CommandDefinition = {
 			name: string;
 			team: string;
 			discordUsername?: string;
+			discordId?: string;
 			enrolledPlayer?: EnrolledPlayer;
 			isNew: boolean;
 		};
@@ -78,6 +80,7 @@ const command: CommandDefinition = {
 			const name = columns[nameIdx] || "";
 			const team = columns[teamIdx] || "";
 			const discordUsername = discordUsernameIdx !== -1 ? columns[discordUsernameIdx] : undefined;
+			const discordId = discordIdIdx !== -1 ? columns[discordIdIdx]?.trim() : undefined;
 
 			let enrolledPlayer = await EnrolledPlayer.createQueryBuilder("player")
 				.innerJoinAndSelect("player.tournament", "tournament")
@@ -100,12 +103,18 @@ const command: CommandDefinition = {
 			enrolledPlayer.team = team;
 			enrolledPlayer.discordUsername = discordUsername;
 
+			// If discordId is provided, auto-verify (player verified in a previous tournament)
+			if (discordId) {
+				enrolledPlayer.discordId = discordId;
+				enrolledPlayer.verified = true;
+			}
+
 			// Track teams that need Challonge registration
 			if (shouldRegisterToChallonge && !enrolledPlayer.challongeId && team) {
 				teamsToRegister.add(team);
 			}
 
-			enrollments.push({ email, name, team, discordUsername, enrolledPlayer, isNew });
+			enrollments.push({ email, name, team, discordUsername, discordId, enrolledPlayer, isNew });
 		}
 
 		// Bulk register teams to Challonge in a single API call

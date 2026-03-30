@@ -191,7 +191,8 @@ router.post("/api/tournaments/:id/participants/import", async (req: Request, res
 		const emailIdx = headers.findIndex(h => h.includes("email"));
 		const nameIdx = headers.findIndex(h => h.includes("name"));
 		const teamIdx = headers.findIndex(h => h.includes("team"));
-		const discordUsernameIdx = headers.findIndex(h => h.includes("discord"));
+		const discordUsernameIdx = headers.findIndex(h => h === "discord username" || h === "discordusername" || h === "discord");
+		const discordIdIdx = headers.findIndex(h => h === "discord id" || h === "discordid");
 
 		if (emailIdx === -1 || nameIdx === -1 || teamIdx === -1) {
 			return res.status(400).json({
@@ -211,6 +212,7 @@ router.post("/api/tournaments/:id/participants/import", async (req: Request, res
 			const name = columns[nameIdx];
 			const team = columns[teamIdx];
 			const discordUsername = discordUsernameIdx !== -1 ? columns[discordUsernameIdx] : undefined;
+			const discordId = discordIdIdx !== -1 ? columns[discordIdIdx]?.trim() : undefined;
 
 			if (!email || !name || !team) {
 				errors.push(`Row ${i + 1}: Missing required fields`);
@@ -238,7 +240,14 @@ router.post("/api/tournaments/:id/participants/import", async (req: Request, res
 				participant.name = name;
 				participant.team = team;
 				participant.discordUsername = discordUsername;
-				participant.verified = participant.verified || false;
+
+				// If discordId is provided, auto-verify (player verified in a previous tournament)
+				if (discordId) {
+					participant.discordId = discordId;
+					participant.verified = true;
+				} else {
+					participant.verified = participant.verified || false;
+				}
 
 				await participant.save();
 			} catch (err) {
@@ -273,11 +282,11 @@ router.get("/api/tournaments/:id/participants/download-template", async (req: Re
 		}
 
 		// Create blank CSV with examples
-		const headers = 'email,name,team,discord';
+		const headers = 'email,name,team,discord username,discord id';
 		const exampleRows = [
-			'captain1@example.com,John Doe,Team Alpha,johndoe#1234',
-			'captain2@example.com,Jane Smith,Team Beta,janesmith#5678',
-			'captain3@example.com,Bob Wilson,Team Gamma,'
+			'captain1@example.com,John Doe,Team Alpha,johndoe,123456789',
+			'captain2@example.com,Jane Smith,Team Beta,janesmith,',
+			'captain3@example.com,Bob Wilson,Team Gamma,,'
 		];
 		const csvContent = [headers, ...exampleRows].join('\n');
 
